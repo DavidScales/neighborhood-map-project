@@ -4,6 +4,9 @@ html, body {
 	padding: 0;
 }
 
+/*
+ * Map
+ */
 #map {
 	height: 100%;
 }
