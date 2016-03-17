@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+
+        <!-- Load the page styles -->
+        <link href="css/style.css" rel="stylesheet">
+
+        <!-- Set initial viewport -->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <!-- Use unicode -->
+        <meta charset="UTF-8">
+
+        <!-- Set favicon -->
+        <link rel="shortcut icon" type="images/png" href="images/map-marker-favicon.png">
+
+        <!-- Set title -->
+        <title>Neighborhood Map</title>
+
+    </head>
+
+    <body>
+        <!-- Google map  -->
+        <div id="map"></div>
+
+        <!-- Load Google Map API  -->
+        <script src="https://maps.googleapis.com/maps/api/js?callback=initMap&libraries=places" async></script>
+
+        <!-- Load libraries -->
+        <script src="js/lib/jquery-1.12.1.js"></script>
+        <script src="js/lib/knockout-3.2.0.js"></script>
+
+        <!-- Load and run js files -->
+        <script src="js/app.js"></script>
+
+    </body>
+</html>
