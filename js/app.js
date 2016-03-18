@@ -41,8 +41,11 @@ function initMap() {
 		request.query = 'restaurants'; // Search for 'restaurants' as keyword
 		request.bounds = map.getBounds(); // Get results only within our map boundaries
 
-		// Send Google Places request
+		// Prepare Google Places request
 		service = new google.maps.places.PlacesService(map);
+		// Custom timing measurement - Google Places request sent
+		window.performance.mark('places_request_start');
+		// Send Google Places request
 		service.textSearch(request, placesCallback);
 	});
 }
@@ -60,47 +63,36 @@ function placesCallback(results, status) {
 	       and stored in an observable array.  */
 	    for (var i = 0; i < results.length; i++) {
 			places.push( new Place(results[i]) );
-
-			// For testing
-			// result = results[i];
-			// lat = results[i].geometry.location.lat();
-			// lng = results[i].geometry.location.lng();
-			// var marker = new google.maps.Marker({
-			// 	position: {lat, lng},
-			// 	title: results[i].name
-			// });
-			// marker.setMap(map);
 	    }
+	    // Custom timing measurement - places list built
+		window.performance.mark('places_list_built');
 	}
 }
 
 /* Places are stored in an observable array, which is bound to the #places-list <ul>
-   in the HTML. This automatically updates the View with a list */
+ * in the HTML. This automatically updates the View with a list */
 var places = ko.observableArray();
 
 /* Results from the Google Places request are converted into a Place object, where each property
-   is an observable */
-var Place = function(placeData) {// TODO - do ALL properties need to be observables?
+ * is an observable */
+var Place = function(placeData) {
+	// TODO
+	this.name = placeData.name; // The name of the place
+	this.open = placeData.opening_hours.open_now; // TODO - show and/or filter by 'open now'
+
 	var lat = placeData.geometry.location.lat();
 	var lng = placeData.geometry.location.lng();
 
 	// TODO - highlight active place
 	// this.active = ko.observable(false);
 
-	// TODO - filter places
-	// this.visible = ko.observable(true);
-
-	// TODO
+	// Create and append Google map markers for each place based on location
 	this.marker = new google.maps.Marker({
 		position: {lat, lng},
 		title: placeData.name
 	});
-	this.marker.setMap(map); // TODO - filter places by setting 'map' to null
-
-	// TODO - Do these need to be observables?
-	this.name = ko.observable(placeData.name); // The name of the place
-	this.open = ko.observable(placeData.opening_hours.open_now); // TODO - show and/or filter by 'open now'
-}
+	this.marker.setMap(map); // TODO - filter places by setting 'map' to null, use computed observable?
+};
 
 // ViewModel allows interaction between UI/View and Model/data
 var ViewModel = function() {
@@ -108,8 +100,38 @@ var ViewModel = function() {
 	// Save local scope
 	var self = this;
 
-	// Connect the observable array of places to ViewModel
-	this.placesList = places;
+	// Text to filter our places is bound to <input>
+	self.filterText = ko.observable('Pizza');
+
+	/* Filter places by user text input. This is bound to <ul> for places, and will update in real
+	 * time as the user changes the filter text in <input>, or the places list changes */
+	self.filteredList = ko.computed(function(){
+
+		// Custom timing measurement - filter start
+		window.performance.mark('filter_start');
+
+		// Store the filter text and the places list, limiting re-computation
+		var filterText = self.filterText().toLowerCase(); // Filter text, lower cased
+		var placesCopy = places().slice(); // Places list
+		var placesLength = placesCopy.length; // Places list length, for loop
+		// Store filtered places
+		var filteredList = [];
+
+		// For each place, check if the place name (lower case) contains the filter text
+		for (var i = 0; i < placesLength; i++) { // **
+			if ( placesCopy[i].name.toLowerCase().includes(filterText) ) {
+				// Add appropriate places to filtered list
+				filteredList.push( placesCopy[i] );
+			}
+		}
+
+		// Custom timing measurement - filter end
+		window.performance.mark('filter_end');
+		window.performance.measure('filter_time', 'filter_start', 'filter_end');
+
+		// Return only places that contain the filter text
+		return filteredList;
+	});
 
 	// TODO
 	// this.activePlace = ko.observable( this.placesList()[0] ); // ???
@@ -122,7 +144,6 @@ var ViewModel = function() {
 
 // Apply bindgings to the ViewModel, linking UI/View with Model/data
 ko.applyBindings(new ViewModel());
-
 
 /* Current bug - map bounds resizing will re-request and autoupdate list and map */
 

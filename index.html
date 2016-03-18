@@ -20,9 +20,14 @@
     </head>
 
     <body>
+        <!-- Places filter input -->
+        <p> Filter results: <input type="text" name="filter-input" data-bind="textInput: filterText"> </p>
+
+        <!-- For testing -->
+        <p data-bind="text: filterText"></p>
 
         <!-- Places list -->
-        <ul id="places-list" data-bind="foreach: placesList">
+        <ul id="places-list" data-bind="foreach: filteredList">
             <li class="places-list-item" data-bind="text: name"></li>
         </ul>
 
