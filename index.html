@@ -20,10 +20,16 @@
     </head>
 
     <body>
+
+        <!-- Places list -->
+        <ul id="places-list" data-bind="foreach: placesList">
+            <li data-bind="text: name"></li>
+        </ul>
+
         <!-- Google map  -->
         <div id="map"></div>
 
-        <!-- Load Google Map API  -->
+        <!-- Load Google Maps API  -->
         <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBUjsdD1ThEiL98_mDnT8sCPAu-ED0DeYg&callback=initMap&libraries=places" async></script>
 
         <!-- Load libraries -->

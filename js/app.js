@@ -1,3 +1,5 @@
+/* app.js */
+
 /*******************************************************************************************
  * Google Maps initialization, Google Places request
  *******************************************************************************************/
@@ -6,6 +8,7 @@
 var map;
 var service;
 var infoWindow;
+// initMap called by Google Maps API callback
 function initMap() {
 
 	// Custom timing measurement - Google Maps callback called
@@ -32,7 +35,7 @@ function initMap() {
 	 * of the map.
 	 */
 	var request = {}; // Initialize request object
-	map.addListener('bounds_changed', function(){
+	map.addListener('bounds_changed', function() {
 		// Set request option parameters
 		request.type = 'meal_takeaway'; // Return results that are takeout capable restaurants
 		request.query = 'restaurants'; // Search for 'restaurants' as keyword
@@ -52,20 +55,45 @@ function placesCallback(results, status) {
 
 	// Confirm successful response
 	if (status == google.maps.places.PlacesServiceStatus.OK){
-
-		// For testing
-		console.log(results.length);
-		console.log(results);
-		for (var i = 0; i < results.length; i++) {
-			console.log(results[i].name);
+	    /* Results from the Google Places request are converted into Place objects,
+	       and stored in an observable array.  */
+	    for (var i = 0; i < results.length; i++) {
+			places.push( new Place(results[i]) );
 	    }
 	}
 }
 
+/* Places are stored in an observable array, which is bound to the #places-list <ul>
+   in the HTML. This automatically updates the View with a list */
+var places = ko.observableArray();
+
+/* Results from the Google Places request are converted into a Place object, where each property
+   is an observable */
+// TODO - do ALL properties need to be observables? Or just .active?
+var Place = function(placeData) {
+	this.active = ko.observable(false);
+	this.name = ko.observable(placeData.name);
+	this.open = ko.observable(placeData.opening_hours.open_now);
+}
+
+// ViewModel allows interaction between UI/View and Model/data
 var ViewModel = function() {
+
+	// Save local scope
 	var self = this;
 
+	// Connect the observable array of places to ViewModel
+	this.placesList = places;
+
+	// TODO
+	// this.activePlace = ko.observable( this.placesList()[0] ); // ???
+
+	// TODO
+	// this.setActivePlace = function(clickedPlace) {
+	// 	self.activePlace(clickedPlace);
+	// }
 };
 
+// Apply bindgings to the ViewModel, linking UI/View with Model/data
 ko.applyBindings(new ViewModel());
 
