@@ -55,10 +55,21 @@ function placesCallback(results, status) {
 
 	// Confirm successful response
 	if (status == google.maps.places.PlacesServiceStatus.OK){
+
 	    /* Results from the Google Places request are converted into Place objects,
 	       and stored in an observable array.  */
 	    for (var i = 0; i < results.length; i++) {
 			places.push( new Place(results[i]) );
+
+			// For testing
+			// result = results[i];
+			// lat = results[i].geometry.location.lat();
+			// lng = results[i].geometry.location.lng();
+			// var marker = new google.maps.Marker({
+			// 	position: {lat, lng},
+			// 	title: results[i].name
+			// });
+			// marker.setMap(map);
 	    }
 	}
 }
@@ -69,11 +80,26 @@ var places = ko.observableArray();
 
 /* Results from the Google Places request are converted into a Place object, where each property
    is an observable */
-// TODO - do ALL properties need to be observables? Or just .active?
-var Place = function(placeData) {
-	this.active = ko.observable(false);
-	this.name = ko.observable(placeData.name);
-	this.open = ko.observable(placeData.opening_hours.open_now);
+var Place = function(placeData) {// TODO - do ALL properties need to be observables?
+	var lat = placeData.geometry.location.lat();
+	var lng = placeData.geometry.location.lng();
+
+	// TODO - highlight active place
+	// this.active = ko.observable(false);
+
+	// TODO - filter places
+	// this.visible = ko.observable(true);
+
+	// TODO
+	this.marker = new google.maps.Marker({
+		position: {lat, lng},
+		title: placeData.name
+	});
+	this.marker.setMap(map); // TODO - filter places by setting 'map' to null
+
+	// TODO - Do these need to be observables?
+	this.name = ko.observable(placeData.name); // The name of the place
+	this.open = ko.observable(placeData.opening_hours.open_now); // TODO - show and/or filter by 'open now'
 }
 
 // ViewModel allows interaction between UI/View and Model/data
@@ -96,4 +122,11 @@ var ViewModel = function() {
 
 // Apply bindgings to the ViewModel, linking UI/View with Model/data
 ko.applyBindings(new ViewModel());
+
+
+/* Current bug - map bounds resizing will re-request and autoupdate list and map */
+
+
+
+
 
