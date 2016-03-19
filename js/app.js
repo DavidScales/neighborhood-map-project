@@ -66,6 +66,9 @@ function placesCallback(results, status) {
 	    }
 	    // Custom timing measurement - places list built
 		window.performance.mark('places_list_built');
+
+		// For testing
+		console.log(results);
 	}
 }
 
@@ -82,9 +85,6 @@ var Place = function(placeData) {
 
 	var lat = placeData.geometry.location.lat();
 	var lng = placeData.geometry.location.lng();
-
-	// TODO - highlight active place
-	// this.active = ko.observable(false);
 
 	// Create and append Google map markers for each place based on location
 	this.marker = new google.maps.Marker({
@@ -141,13 +141,19 @@ var ViewModel = function() {
 		return filteredList;
 	});
 
-	// TODO
-	// this.activePlace = ko.observable( this.placesList()[0] ); // ???
+	/* Keep track of which place is currently under investigation by the user, or "active".
+	 * A click listener exists on each WHAT UI element, that calls a function which changes
+	 * the clicked UI element's corresponding place to the "active" place. KO logic in the html
+	 * changes the CSS class of the active UI element.
+	 * Bound to WHAT */ // TODO - WHAT?
+	self.activePlace = ko.observable('uninitialized');
 
-	// TODO
-	// this.setActivePlace = function(clickedPlace) {
-	// 	self.activePlace(clickedPlace);
-	// }
+	/* Update the place that is currently active.
+	 * Bound to WHAT, called on UI click. */ // TODO - WHAT?
+	self.setActivePlace = function(clickedPlace) {
+		// Set new active place
+		self.activePlace(clickedPlace);
+	}
 };
 
 // Apply bindgings to the ViewModel, linking UI/View with Model/data
