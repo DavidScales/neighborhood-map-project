@@ -117,11 +117,19 @@ var ViewModel = function() {
 		// Store filtered places
 		var filteredList = [];
 
-		// For each place, check if the place name (lower case) contains the filter text
-		for (var i = 0; i < placesLength; i++) { // **
+		// For each place in the places list
+		for (var i = 0; i < placesLength; i++) {
+			// If the place name (lower case) contains the filter text
 			if ( placesCopy[i].name.toLowerCase().includes(filterText) ) {
+				// Add the corresponding map marker
+				placesCopy[i].marker.setMap(map);
 				// Add appropriate places to filtered list
 				filteredList.push( placesCopy[i] );
+			}
+			// Otherwise
+			else {
+				// Remove the corresponding map marker
+				placesCopy[i].marker.setMap(null);
 			}
 		}
 
