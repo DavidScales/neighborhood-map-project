@@ -79,6 +79,8 @@ var places = ko.observableArray();
 /* Results from the Google Places request are converted into a Place object, where each property
  * is an observable */
 var Place = function(placeData) {
+	//
+	var self = this;
 	// TODO
 	this.name = placeData.name; // The name of the place
 	this.open = placeData.opening_hours.open_now; // TODO - show and/or filter by 'open now'
@@ -89,9 +91,14 @@ var Place = function(placeData) {
 	// Create and append Google map markers for each place based on location
 	this.marker = new google.maps.Marker({
 		position: {lat, lng},
-		title: placeData.name
+		title: placeData.name,
+		map: map
 	});
-	this.marker.setMap(map); // TODO - filter places by setting 'map' to null, use computed observable?
+	// Listen to marker clicks
+	this.marker.addListener('click', function() {
+		// On click, set corresponding place to be the active place
+		viewModel.setActivePlace(self);
+	});
 };
 
 // ViewModel allows interaction between UI/View and Model/data
@@ -157,7 +164,8 @@ var ViewModel = function() {
 };
 
 // Apply bindgings to the ViewModel, linking UI/View with Model/data
-ko.applyBindings(new ViewModel());
+var viewModel = new ViewModel();
+ko.applyBindings(viewModel);
 
 /* Current bug - map bounds resizing will re-request and autoupdate list and map */
 
