@@ -100,9 +100,6 @@ var Place = function(placeData) {
 	this.marker.addListener('click', function() {
 		// On click, set corresponding place to be the active place
 		viewModel.setActivePlace(self);
-		// Create a bounce animation
-		this.setAnimation(google.maps.Animation.BOUNCE); // Begin bouncing
-		setTimeout( function(){self.marker.setAnimation(null)}, 1400 ); // Stop after 2 bounces (700ms each)
 	});
 };
 
@@ -165,6 +162,9 @@ var ViewModel = function() {
 	self.setActivePlace = function(clickedPlace) {
 		// Set new active place
 		self.activePlace(clickedPlace);
+		// Create a bounce animation for the active place
+		clickedPlace.marker.setAnimation(google.maps.Animation.BOUNCE); // Begin bouncing
+		setTimeout( function(){clickedPlace.marker.setAnimation(null)}, 1400 ); // Stop after 2 bounces (700ms each)
 	}
 };
 
