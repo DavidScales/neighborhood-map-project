@@ -82,9 +82,10 @@ var Place = function(placeData) {
 	//
 	var self = this;
 	// TODO
-	this.name = placeData.name; // The name of the place
+	this.name = placeData.name; // The name of the place // Even need this line?
 	this.open = placeData.opening_hours.open_now; // TODO - show and/or filter by 'open now'
 
+	// Extract location
 	var lat = placeData.geometry.location.lat();
 	var lng = placeData.geometry.location.lng();
 
@@ -92,12 +93,16 @@ var Place = function(placeData) {
 	this.marker = new google.maps.Marker({
 		position: {lat, lng},
 		title: placeData.name,
-		map: map
+		map: map,
+		animation: google.maps.Animation.DROP // Add drop animation for marker initialization
 	});
 	// Listen to marker clicks
 	this.marker.addListener('click', function() {
 		// On click, set corresponding place to be the active place
 		viewModel.setActivePlace(self);
+		// Create a bounce animation
+		this.setAnimation(google.maps.Animation.BOUNCE); // Begin bouncing
+		setTimeout( function(){self.marker.setAnimation(null)}, 1400 ); // Stop after 2 bounces (700ms each)
 	});
 };
 
