@@ -8,6 +8,7 @@
 var map;
 var service;
 var infoWindow;
+var placesRequested = false; // Prevent multiple requests
 // initMap called by Google Maps API callback
 function initMap() {
 
@@ -28,6 +29,8 @@ function initMap() {
 	 * An event listener is used, because map bounds cannot be acquired until the map
 	 * tiles have fully loaded. Listening for the 'bounds_changed' event ensures that
 	 * getBounds() will not fire until the maps initial bounds are actually established.
+	 * The boolean condition 'mapRequest', ensures that the map won't be re-requested
+	 * every time the map bounds change.
 	 *
 	 * Alternatively, a 'location' and 'radius' parameter could be used. This would be
 	 * faster (we don't need to wait for map tiles to load before sending Places request)
@@ -36,17 +39,22 @@ function initMap() {
 	 */
 	var request = {}; // Initialize request object
 	map.addListener('bounds_changed', function() {
-		// Set request option parameters
-		request.type = 'meal_takeaway'; // Return results that are takeout capable restaurants
-		request.query = 'restaurants'; // Search for 'restaurants' as keyword
-		request.bounds = map.getBounds(); // Get results only within our map boundaries
+		// If Google Places have not been requested
+		if (!placesRequested){
+			// Set request option parameters
+			request.type = 'meal_takeaway'; // Return results that are takeout capable restaurants
+			request.query = 'restaurants'; // Search for 'restaurants' as keyword
+			request.bounds = map.getBounds(); // Get results only within our map boundaries
 
-		// Prepare Google Places request
-		service = new google.maps.places.PlacesService(map);
-		// Custom timing measurement - Google Places request sent
-		window.performance.mark('places_request_start');
-		// Send Google Places request
-		service.textSearch(request, placesCallback);
+			// Prepare Google Places request
+			service = new google.maps.places.PlacesService(map);
+			// Custom timing measurement - Google Places request sent
+			window.performance.mark('places_request_start');
+			// Send Google Places request
+			service.textSearch(request, placesCallback);
+			// Change Places requested status, to avoid multiple requests
+			placesRequested = true;
+		}
 	});
 }
 
