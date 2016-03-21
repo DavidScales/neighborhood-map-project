@@ -80,6 +80,10 @@ function placesCallback(results, status) {
 	}
 }
 
+/*******************************************************************************************
+ *
+ *******************************************************************************************/
+
 /* Places are stored in an observable array, which is bound to the #places-list <ul>
  * in the HTML. This automatically updates the View with a list */
 var places = ko.observableArray();
@@ -100,8 +104,8 @@ var Place = function(placeData) {
 	// Create and append Google map markers for each place based on location
 	this.marker = new google.maps.Marker({
 		position: {lat, lng},
-		title: placeData.name,
 		map: map,
+		title: placeData.name, // Set title to place name
 		animation: google.maps.Animation.DROP // Add drop animation for marker initialization
 	});
 	// Listen to marker clicks
@@ -168,10 +172,21 @@ var ViewModel = function() {
 	/* Update the place that is currently active.
 	 * Bound to WHAT, called on UI click. */ // TODO - WHAT?
 	self.setActivePlace = function(clickedPlace) {
+
+		// If the active place has been initialized
+		if (self.activePlace() !== 'uninitialized') {
+			// Reset the active place's map marker
+			self.activePlace().marker.setIcon(null);
+		}
+
 		// Set new active place
 		self.activePlace(clickedPlace);
+
+		// Set new marker icon
+		self.activePlace().marker.setIcon('http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|00BCD4');
+
 		// Create a bounce animation for the active place
-		clickedPlace.marker.setAnimation(google.maps.Animation.BOUNCE); // Begin bouncing
+		self.activePlace().marker.setAnimation(google.maps.Animation.BOUNCE); // Begin bouncing
 		setTimeout( function(){clickedPlace.marker.setAnimation(null)}, 1400 ); // Stop after 2 bounces (700ms each)
 	}
 };
@@ -179,10 +194,3 @@ var ViewModel = function() {
 // Apply bindgings to the ViewModel, linking UI/View with Model/data
 var viewModel = new ViewModel();
 ko.applyBindings(viewModel);
-
-/* Current bug - map bounds resizing will re-request and autoupdate list and map */
-
-
-
-
-
