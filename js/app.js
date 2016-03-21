@@ -76,7 +76,7 @@ function placesCallback(results, status) {
 		window.performance.mark('places_list_built');
 
 		// For testing
-		console.log(results);
+		// console.log(results);
 	}
 }
 
@@ -114,6 +114,10 @@ var Place = function(placeData) {
 		viewModel.setActivePlace(self);
 	});
 };
+
+/*******************************************************************************************
+ *
+ *******************************************************************************************/
 
 // ViewModel allows interaction between UI/View and Model/data
 var ViewModel = function() {
@@ -194,3 +198,69 @@ var ViewModel = function() {
 // Apply bindgings to the ViewModel, linking UI/View with Model/data
 var viewModel = new ViewModel();
 ko.applyBindings(viewModel);
+
+/*******************************************************************************************
+ *
+ *******************************************************************************************/
+
+// https://discussions.udacity.com/t/how-to-make-ajax-request-to-yelp-api/13699/4
+// MarkN
+
+// Abstract some Yelp API parameters
+var yelp_url = 'https://api.yelp.com/v2/search?';
+var YELP_KEY = 'c_mhQXy35rz4043INaHmfg';
+var YELP_KEY_SECRET = 'GyunKRoE9EkuYwUe_zzFkJ24JG8';
+var YELP_TOKEN = 'LtonUTLkQVzi-rA3HEp0rWvmLd9DuvTm';
+var YELP_TOKEN_SECRET = '_AzbVT0ASeJhb1BT92FS1kofRk8';
+
+// Set required Yelp API parameters object
+var parameters = {
+	// OAuth required values
+	oauth_consumer_key: YELP_KEY,
+	oauth_token: YELP_TOKEN,
+	oauth_nonce: Math.floor(Math.random() * 1e12).toString(), // Generates a random number and returns it as a string for OAuthentication
+	oauth_timestamp: Math.floor(Date.now()/1000),
+	oauth_signature_method: 'HMAC-SHA1',
+	oauth_version : '1.0',
+	callback: 'cb', // This is crucial to include for jsonp implementation in AJAX or else the oauth-signature will be wrong.
+	// Place-specific parameters for request
+	location: 'San Francisco', // Location of the place
+	term: 'food', // Required parameter
+	limit: 1 // Limit to only one response item
+};
+
+// Generate a required OAuth signature using external library
+var encodedSignature = oauthSignature.generate('GET',yelp_url, parameters, YELP_KEY_SECRET, YELP_TOKEN_SECRET);
+// Add the signature to the Yelp parameters object
+parameters.oauth_signature = encodedSignature;
+
+// Set settings object for AJAX request
+var settings = {
+	url: yelp_url, // url for Yelp API
+	data: parameters, // Send the Yelp API parameters
+	cache: true,  // This is crucial to include as well to prevent jQuery from adding on a cache-buster parameter "_=23489489749837", invalidating our oauth-signature
+	dataType: 'jsonp', // Need jsonp for cross-domain requests
+	jsonp: false, // Prevent jQuery from defining its own callback function
+};
+
+//
+function cb(data) {
+	//
+	console.log(data);
+
+	// Clear timeout on success..
+	clearTimeout(yelpRequestTimeout);
+};
+
+// Send AJAX query via jQuery library
+$.ajax(settings);
+
+/* done and fail - jsonP */
+// Start a timeout in case Yelp fails
+var yelpRequestTimeout = setTimeout(function(){
+	// TODO if Yelp fails
+	console.log('Yelp failed...');
+}, 2000);
+
+
+
