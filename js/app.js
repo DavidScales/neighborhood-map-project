@@ -103,6 +103,8 @@ var Place = function(placeData) {
 	this.shortAddress = placeData.formatted_address.split(',')[0];
 	// console.log (this.shortAddress); //TODO
 	this.place_id = placeData.place_id; // TODO
+	// TODO
+	this.google_rating = placeData.rating;
 
 	// Extract location
 	var lat = placeData.geometry.location.lat();
@@ -219,7 +221,7 @@ ko.applyBindings(viewModel);
  *
  *******************************************************************************************/
 
-// Comment and improve
+/* */
 function getDetails(){
 
 	var count = 0;
@@ -265,9 +267,6 @@ function getDetails(){
 
 // https://discussions.udacity.com/t/how-to-make-ajax-request-to-yelp-api/13699/4
 // MarkN
-
-//
-var yelpTimeouts = {};
 
 function initYelp() {
 
@@ -324,8 +323,6 @@ function initYelp() {
 	}
 };
 
-var yelpResults = [];
-
 function yelpCB(data) {
 
 	//
@@ -336,17 +333,15 @@ function yelpCB(data) {
 	placesLength = placesCopy.length;
 
 	for (var i = 0; i < placesLength; i++) {
-
 		if ( placesCopy[i].raw_phone_number == data.businesses[0].phone || placesCopy[i].shortAddress == data.businesses[0].location.address[0]) {
-				console.log('Match found: ');
-				console.log(data.businesses[0].name + ' @ ' + data.businesses[0].location.address[0] + ' &');
-				console.log(placesCopy[i].name + ' @ ' + places()[i].shortAddress);
-				// break?
-				return;
-			}
+
+			places()[i].review_count = data.businesses[0].review_count;
+			places()[i].yelp_rating_img_url = data.businesses[0].rating_img_url;
+			places()[i].yelp_url = data.businesses[0].url;
+			places()[i].yelp_image_url = data.businesses[0].image_url;
+			return;
+		}
 	}
-	// see above comment
-	console.log('No match for ' + data.businesses[0].name + ' @ ' + data.businesses[0].location.address[0]);
 };
 
 
