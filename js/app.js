@@ -69,14 +69,17 @@ function placesCallback(results, status) {
 
 	    /* Results from the Google Places request are converted into Place objects,
 	       and stored in an observable array.  */
-	    for (var i = 0; i < results.length; i++) {
+	    for (var i = 0; i < 10; i++) { // Hard code 10 instead of using results.length - using too many places was causing query limits in Google getDetails requests
 			places.push( new Place(results[i]) );
 	    }
 	    // Custom timing measurement - places list built
 		window.performance.mark('places_list_built');
 
 		// For testing
-		// console.log(results);
+		console.log(results);
+
+		// Request more details for the Place objects from Google Places
+		getDetails();
 	}
 }
 
@@ -96,10 +99,17 @@ var Place = function(placeData) {
 	// TODO
 	this.name = placeData.name; // The name of the place // Even need this line?
 	this.open = placeData.opening_hours.open_now; // TODO - show and/or filter by 'open now'
+	this.address = placeData.formatted_address; // Formatted address
+	this.shortAddress = placeData.formatted_address.split(',')[0];
+	// console.log (this.shortAddress); //TODO
+	this.place_id = placeData.place_id; // TODO
 
 	// Extract location
 	var lat = placeData.geometry.location.lat();
 	var lng = placeData.geometry.location.lng();
+	//
+	this.lat = lat;
+	this.lng = lng;
 
 	// Create and append Google map markers for each place based on location
 	this.marker = new google.maps.Marker({
@@ -129,15 +139,21 @@ var ViewModel = function() {
 	self.filterText = ko.observable('Pizza');
 
 	/* Filter places by user text input. This is bound to <ul> for places, and will update in real
-	 * time as the user changes the filter text in <input>, or the places list changes */
+	 * time as the user changes the filter text in <input>. Updating/re-computation will not occur
+	 * if 'places' changes however, thanks to the use of peek(). This will prevent re-computation
+	 * each time a new place is added during 'places' initialization, as well as when additional data
+	 * from the Yelp API is added to each place. */
 	self.filteredList = ko.computed(function(){
+
+		//
+		console.log('filtering');
 
 		// Custom timing measurement - filter start
 		window.performance.mark('filter_start');
 
 		// Store the filter text and the places list, limiting re-computation
 		var filterText = self.filterText().toLowerCase(); // Filter text, lower cased
-		var placesCopy = places().slice(); // Places list
+		var placesCopy = places.peek().slice(); // Places list. Peek() prevents recomputation
 		var placesLength = placesCopy.length; // Places list length, for loop
 		// Store filtered places
 		var filteredList = [];
@@ -203,64 +219,134 @@ ko.applyBindings(viewModel);
  *
  *******************************************************************************************/
 
+// Comment and improve
+function getDetails(){
+
+	var count = 0;
+
+	for (var i = 0; i < places().length; i++) {
+		var request = {
+			placeId: places()[i].place_id
+		};
+		service = new google.maps.places.PlacesService(map);
+		service.getDetails(request, callback);
+	}
+
+	function callback(place, status){
+		if (status == google.maps.places.PlacesServiceStatus.OK) {
+
+			for (var j = 0; j < places().length; j++){
+				if (place.place_id == places()[j].place_id){
+					places()[j].formatted_phone_number = place.formatted_phone_number;
+					places()[j].raw_phone_number = place.formatted_phone_number.replace(/[()-]|\s/g, "");
+				}
+				else{
+					//
+				}
+			}
+
+			count++;
+
+			if (count >= places().length){
+				initYelp();
+			}
+
+		}
+		else {
+			console.log(status);
+			//
+		}
+	}
+}
+
+/*******************************************************************************************
+ *
+ *******************************************************************************************/
+
 // https://discussions.udacity.com/t/how-to-make-ajax-request-to-yelp-api/13699/4
 // MarkN
 
-// Abstract some Yelp API parameters
-var yelp_url = 'https://api.yelp.com/v2/search?';
-var YELP_KEY = 'c_mhQXy35rz4043INaHmfg';
-var YELP_KEY_SECRET = 'GyunKRoE9EkuYwUe_zzFkJ24JG8';
-var YELP_TOKEN = 'LtonUTLkQVzi-rA3HEp0rWvmLd9DuvTm';
-var YELP_TOKEN_SECRET = '_AzbVT0ASeJhb1BT92FS1kofRk8';
-
-// Set required Yelp API parameters object
-var parameters = {
-	// OAuth required values
-	oauth_consumer_key: YELP_KEY,
-	oauth_token: YELP_TOKEN,
-	oauth_nonce: Math.floor(Math.random() * 1e12).toString(), // Generates a random number and returns it as a string for OAuthentication
-	oauth_timestamp: Math.floor(Date.now()/1000),
-	oauth_signature_method: 'HMAC-SHA1',
-	oauth_version : '1.0',
-	callback: 'cb', // This is crucial to include for jsonp implementation in AJAX or else the oauth-signature will be wrong.
-	// Place-specific parameters for request
-	location: 'San Francisco', // Location of the place
-	term: 'food', // Required parameter
-	limit: 1 // Limit to only one response item
-};
-
-// Generate a required OAuth signature using external library
-var encodedSignature = oauthSignature.generate('GET',yelp_url, parameters, YELP_KEY_SECRET, YELP_TOKEN_SECRET);
-// Add the signature to the Yelp parameters object
-parameters.oauth_signature = encodedSignature;
-
-// Set settings object for AJAX request
-var settings = {
-	url: yelp_url, // url for Yelp API
-	data: parameters, // Send the Yelp API parameters
-	cache: true,  // This is crucial to include as well to prevent jQuery from adding on a cache-buster parameter "_=23489489749837", invalidating our oauth-signature
-	dataType: 'jsonp', // Need jsonp for cross-domain requests
-	jsonp: false, // Prevent jQuery from defining its own callback function
-};
-
 //
-function cb(data) {
-	//
-	console.log(data);
+var yelpTimeouts = {};
 
-	// Clear timeout on success..
-	clearTimeout(yelpRequestTimeout);
+function initYelp() {
+
+	// Testing
+	console.log('Initializing Yelp...');
+
+	// Abstract some Yelp API parameters
+	var yelp_url = 'https://api.yelp.com/v2/search?';
+	var YELP_KEY = 'c_mhQXy35rz4043INaHmfg';
+	var YELP_KEY_SECRET = 'GyunKRoE9EkuYwUe_zzFkJ24JG8';
+	var YELP_TOKEN = 'LtonUTLkQVzi-rA3HEp0rWvmLd9DuvTm';
+	var YELP_TOKEN_SECRET = '_AzbVT0ASeJhb1BT92FS1kofRk8';
+
+	//
+	for (var i = 0, total = places().length; i < total; i++) {
+
+		// Set required Yelp API parameters object
+		var parameters = {
+			// OAuth required values
+			oauth_consumer_key: YELP_KEY,
+			oauth_token: YELP_TOKEN,
+			oauth_nonce: Math.floor(Math.random() * 1e12).toString(), // Generates a random number and returns it as a string for OAuthentication
+			oauth_timestamp: Math.floor(Date.now()/1000),
+			oauth_signature_method: 'HMAC-SHA1',
+			oauth_version : '1.0',
+			callback: 'yelpCB', // This is crucial to include for jsonp implementation in AJAX or else the oauth-signature will be wrong.
+			// Place-specific parameters for request
+			location: places()[i].address, // Location of the place
+			term: places()[i].name, // Name of place
+			limit: 1 // Limit to only one response item
+		};
+
+		// Generate a required OAuth signature using external library
+		var encodedSignature = oauthSignature.generate('GET',yelp_url, parameters, YELP_KEY_SECRET, YELP_TOKEN_SECRET);
+		// Add the signature to the Yelp parameters object
+		parameters.oauth_signature = encodedSignature;
+
+		// Set settings object for AJAX request
+		var settings = {
+			url: yelp_url, // url for Yelp API
+			data: parameters, // Send the Yelp API parameters
+			cache: true,  // This is crucial to include as well to prevent jQuery from adding on a cache-buster parameter "_=23489489749837", invalidating our oauth-signature
+			dataType: 'jsonp', // Need jsonp for cross-domain requests
+			jsonp: false, // Prevent jQuery from defining its own callback function, which invalidates OAuth stuff
+			test: 'test' // TODO
+		};
+
+		/* done and fail - jsonP */ // TODO
+
+		//
+		// Send AJAX query via jQuery library
+		$.ajax(settings);
+
+	}
 };
 
-// Send AJAX query via jQuery library
-$.ajax(settings);
+var yelpResults = [];
 
-/* done and fail - jsonP */
-// Start a timeout in case Yelp fails
-var yelpRequestTimeout = setTimeout(function(){
-	// TODO if Yelp fails
-	console.log('Yelp failed...');
-}, 2000);
+function yelpCB(data) {
 
+	//
+	placesCopy = [];
+	for (var i = 0; i < places().length; i++) {
+		placesCopy.push(places()[i]);
+	}
+	placesLength = placesCopy.length;
+
+	for (var i = 0; i < placesLength; i++) {
+
+		if ( placesCopy[i].raw_phone_number == data.businesses[0].phone || placesCopy[i].shortAddress == data.businesses[0].location.address[0]) {
+				console.log('Match found: ');
+				console.log(data.businesses[0].name + ' @ ' + data.businesses[0].location.address[0] + ' &');
+				console.log(placesCopy[i].name + ' @ ' + places()[i].shortAddress);
+				// break?
+				return;
+			}
+	}
+	// see above comment
+	console.log('No match for ' + data.businesses[0].name + ' @ ' + data.businesses[0].location.address[0]);
+};
 
 
