@@ -1,60 +1,64 @@
 /* app.js */
+/*
+ * TODO
+ */
+
+/*******************************************************************************************
+ * Constants
+ *******************************************************************************************/
+
+ // These are the geographic coordinates that will be used to define our neighborhood's location
+ var LAT = 37.5181;
+ var LNG = -122.2917;
+ // This is the search radius around our neighborhood center
+ var RADIUS = 4000;
+ // This is the map's starting zoom level
+ var ZOOM = 13;
 
 /*******************************************************************************************
  * Google Maps initialization, Google Places request
  *******************************************************************************************/
+/* This function is what begins the application. It is called as the callback to the Google
+ * Places API request in index.html. A Google Map is created, centered on our neighborhood, and
+ * put into the view. A Google Places request is then build based on our neighborhood, and sent.
+ * The response is a list of objects, each representing a takeout restaurant. A callback function
+ * converts each of these into a 'Place' object, and stores them in a 'places' list. Finally,
+ * the next stage of the app is initiated with a call to 'getDetais'.
+ */
 
 // Initialize map
 var map;
 var service;
-var placesRequested = false; // Prevent multiple requests
+
 // initMap called by Google Maps API callback
 function initMap() {
 
 	// Custom timing measurement - Google Maps callback called
 	window.performance.mark('maps_callback_start');
 
-	// Set map starting center. Produces: {lat: -34.397, lng: 150.644}
-	var startingLocation = new google.maps.LatLng(37.5181, -122.2917);
+	// Set map starting center.
+	var startingLocation = new google.maps.LatLng(LAT, LNG);
 
 	// Create map in the #map div
 	map = new google.maps.Map(document.getElementById('map'), {
 		center: startingLocation,
-		zoom: 13
+		zoom: ZOOM
 	});
 
-	/* Set up Google Places request object, and send request
-	 *
-	 * An event listener is used, because map bounds cannot be acquired until the map
-	 * tiles have fully loaded. Listening for the 'bounds_changed' event ensures that
-	 * getBounds() will not fire until the maps initial bounds are actually established.
-	 * The boolean condition 'mapRequest', ensures that the map won't be re-requested
-	 * every time the map bounds change.
-	 *
-	 * Alternatively, a 'location' and 'radius' parameter could be used. This would be
-	 * faster (we don't need to wait for map tiles to load before sending Places request)
-	 * but this would only return results in a circular area, which isn't representative
-	 * of the map.
-	 */
-	var request = {}; // Initialize request object
-	map.addListener('bounds_changed', function() {
-		// If Google Places have not been requested
-		if (!placesRequested){
-			// Set request option parameters
-			request.type = 'meal_takeaway'; // Return results that are takeout capable restaurants
-			request.query = 'restaurants'; // Search for 'restaurants' as keyword
-			request.bounds = map.getBounds(); // Get results only within our map boundaries
+	// Set up Google Places request object
+	 var request = {
+	 	type: 'meal_takeaway', // Return results that are takeout capable restaurants
+	 	query: 'restaurants', // Search for 'restaurants' as keyword
+	 	location: startingLocation, // Get results for our neighborhood
+	 	radius: RADIUS // Limit results to those close by our neighborhood
+	 };
 
-			// Prepare Google Places request
-			service = new google.maps.places.PlacesService(map);
-			// Custom timing measurement - Google Places request sent
-			window.performance.mark('places_request_start');
-			// Send Google Places request
-			service.textSearch(request, placesCallback);
-			// Change Places requested status, to avoid multiple requests
-			placesRequested = true;
-		}
-	});
+	// Prepare Google Places request
+	service = new google.maps.places.PlacesService(map);
+	// Custom timing measurement - Google Places request sent
+	window.performance.mark('places_request_start');
+	// Send Google Places request
+	service.textSearch(request, placesCallback);
 }
 
 // Handle Google Places response
@@ -67,8 +71,10 @@ function placesCallback(results, status) {
 	if (status == google.maps.places.PlacesServiceStatus.OK){
 
 	    /* Results from the Google Places request are converted into Place objects,
-	       and stored in an observable array.  */
-	    for (var i = 0; i < 10; i++) { // Hard code 10 instead of using results.length - using too many places was causing query limits in Google getDetails requests
+	       and stored in an observable array. A hard coded limit was used instead of
+	       results.length because using too many places was causing query limits in
+	       Google's getDetails requests */
+	    for (var i = 0; i < 10; i++) { //
 			places.push( new Place(results[i]) );
 	    }
 	    // Custom timing measurement - places list built
