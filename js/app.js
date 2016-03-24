@@ -7,7 +7,6 @@
 // Initialize map
 var map;
 var service;
-var infoWindow;
 var placesRequested = false; // Prevent multiple requests
 // initMap called by Google Maps API callback
 function initMap() {
@@ -120,6 +119,33 @@ var Place = function(placeData) {
 		title: placeData.name, // Set title to place name
 		animation: google.maps.Animation.DROP // Add drop animation for marker initialization
 	});
+
+	// --
+	// Added later from getDetails ..
+	this.formatted_phone_number = ko.observable('formatted phone number');
+	this.raw_phone_number = 'raw phone number';
+	// Added later from initYelp ..
+	this.review_count = '# of reviews';
+	this.yelp_rating_img_url = 'http://placekitten.com/g/50/50';
+	this.yelp_url = 'http://placekitten.com/g/200/150';
+	this.yelp_image_url = 'http://placekitten.com/g/200/150';
+
+	// --
+	this.infoWindowContent = ko.computed(function(){
+		var contentString = '';
+		// --
+		contentString += '<h3>'+self.formatted_phone_number()+'</h3>'+
+						 '<img src="'+self.yelp_image_url+'" alt="yelp rating">';
+
+		return contentString;
+	});
+	// --
+	this.buildInfoWindow = function(){
+		self.infoWindow = new google.maps.InfoWindow({
+				content: self.infoWindowContent() // -- ?
+			});
+	};
+
 	// Listen to marker clicks
 	this.marker.addListener('click', function() {
 		// On click, set corresponding place to be the active place
@@ -199,6 +225,9 @@ var ViewModel = function() {
 		if (self.activePlace() !== 'uninitialized') {
 			// Reset the active place's map marker
 			self.activePlace().marker.setIcon(null);
+			// -- Close the active place's info window
+			self.activePlace().infoWindow.close();
+
 		}
 
 		// Set new active place
@@ -210,6 +239,10 @@ var ViewModel = function() {
 		// Create a bounce animation for the active place
 		self.activePlace().marker.setAnimation(google.maps.Animation.BOUNCE); // Begin bouncing
 		setTimeout( function(){clickedPlace.marker.setAnimation(null)}, 1400 ); // Stop after 2 bounces (700ms each)
+
+		//-- Open info window
+		self.activePlace().buildInfoWindow();
+		self.activePlace().infoWindow.open(map, self.activePlace().marker);
 	}
 };
 
@@ -239,7 +272,9 @@ function getDetails(){
 
 			for (var j = 0; j < places().length; j++){
 				if (place.place_id == places()[j].place_id){
-					places()[j].formatted_phone_number = place.formatted_phone_number;
+					// places()[j].formatted_phone_number = place.formatted_phone_number;
+					// --
+					places()[j].formatted_phone_number(place.formatted_phone_number);
 					places()[j].raw_phone_number = place.formatted_phone_number.replace(/[()-]|\s/g, "");
 				}
 				else{
@@ -343,5 +378,6 @@ function yelpCB(data) {
 		}
 	}
 };
+
 
 
