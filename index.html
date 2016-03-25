@@ -32,7 +32,7 @@
                 <span data-bind="text: name"></span>
                 <span data-bind="text: open"></span>
                 <button data-bind="click: $root.setActivePlace"> ACTIVATE </button>
-                <span data-bind="css: {active: $data != $root.activePlace() }"> active?</span>
+                <span data-bind="css: {active: $data == $root.activePlace() }"> active?</span>
             </li>
         </ul>
 
