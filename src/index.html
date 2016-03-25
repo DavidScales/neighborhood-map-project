@@ -3,7 +3,7 @@
     <head>
 
         <!-- Load the page styles -->
-        <link href="css/style.css" rel="stylesheet">
+        <link href="css/style.css?__inline=true" rel="stylesheet">
 
         <!-- Set initial viewport -->
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -39,16 +39,16 @@
         <!-- Google map  -->
         <div id="map"></div>
 
+        <!-- Load libraries -->
+        <script src="js/lib/jquery-1.12.2.min.js?__inline=true"></script>
+        <script src="js/lib/knockout-3.4.0.min.js?__inline=true"></script>
+        <script src="js/lib/oauth-signature.min.js??__inline=true"></script>
+
+        <!-- Load and run main js file -->
+        <script src="js/app.js?__inline=true"></script>
+
         <!-- Load Google Maps API  -->
         <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBUjsdD1ThEiL98_mDnT8sCPAu-ED0DeYg&callback=initMap&libraries=places" async></script>
-
-        <!-- Load libraries -->
-        <script src="js/lib/jquery-1.12.1.js"></script>
-        <script src="js/lib/knockout-3.2.0.js"></script>
-        <script src="js/lib/oauth-signature.min.js"></script>
-
-        <!-- Load and run js files -->
-        <script src="js/app.js"></script>
 
     </body>
 </html>

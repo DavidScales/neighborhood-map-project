@@ -178,7 +178,7 @@ var ViewModel = function() {
 	var self = this;
 
 	// A bound text <input> allows filtering of places.
-	self.filterText = ko.observable('Pizza');
+	self.filterText = ko.observable('');
 
 	/* This is the list of places to be displayed in the view (as a list, and as markers on the map).
 	 * It is filtered by user text input. It's bound to the <ul> for places, and will update in real
@@ -301,21 +301,20 @@ function getDetails(){
 					places()[j].raw_phone_number = place.formatted_phone_number.replace(/[()-]|\s/g, "");
 				}
 			}
-
-			// Increment the number of successful responses
-			count++;
-
-			// If all of the responses were successful, and each place in the model has phone number data
-			if (count >= places().length){
-				// Initialize Yelp requests
-				initYelp();
-			}
-
 		}
 		// Otherwise the request was unsuccessful
 		else {
 			// Log status / error
 			console.log(status);
+		}
+
+		// Increment the number of responses (successful or not)
+		count++;
+
+		// If all of the responses are complete (successful or not)
+		if (count >= places().length){
+			// Initialize Yelp requests
+			initYelp();
 		}
 	}
 }
@@ -378,6 +377,34 @@ function initYelp() {
 
 		// Send AJAX query via jQuery library
 		$.ajax(settings);
+
+		/* Trying to work out a way to make successful AJAX requests without jQuery */
+		// http://blog.garstasio.com/you-dont-need-jquery/ajax/#jsonp
+		/*
+		var url = yelp_url+
+		'cache='+settings.cache+
+		'&dataType='+settings.dataType+
+		'&jsonp='+settings.jsonp+
+		'&oauth_consumer_key='+parameters.oauth_consumer_key+
+		'&oauth_token='+parameters.oauth_token+
+		'&oauth_nonce='+parameters.oauth_nonce+
+		'&oauth_timestamp='+parameters.oauth_timestamp+
+		'&oauth_signature='+parameters.oauth_signature+
+		'&oauth_signature_method='+parameters.oauth_signature_method+
+		'&oauth_version='+parameters.oauth_version+
+		'&callback='+parameters.callback+
+		'&location='+parameters.location+
+		'&term='+parameters.term+
+		'&limit='+parameters.limit;
+
+		var scriptElement = document.createElement('script');
+		scriptElement.setAttribute('src', url);
+		document.body.appendChild(scriptElement);
+
+		// Error occuring
+		// {"error": {"text": "One or more parameters are missing in request", "id": "MISSING_PARAMETER", "field": "oauth_consumer_key"}}
+
+		*/
 	}
 };
 
@@ -406,22 +433,23 @@ function yelpCallback(data) {
  * The first is to Google Maps, to create the map and Google Places library. Should this fail, the
  * entire app's functionality is essentially destroyed, since all features are based on this. There
  * is thus no way to really compensate for this. Even if the app didn't break, there would be nothing
- * to display.
+ * to display. TODO - add failure alert
  *
  * The second is to Google Places, to get data on 'places' in the neighborhood. Similarly, if this
  * fails, the entire app's functionality is destroyed, and again there is thus no way to really
- * compensate for this. Even if the app didn't break, there would be nothing to display.
+ * compensate for this. Even if the app didn't break, there would be nothing to display. TODO - add
+ * failure alert
  *
  * The third is to Google Place Details, which gets phone numbers for each place in the model. If this
  * fails, the fourth request (to Yelp) would cause errors, because this request relies on comparing
- * phone numbers in order to identify which place in the model to update. However, because the fourth
- * request (to Yelp) is only executed if all Google Place Details requests succeed, no errors should
- * occur. Failure should simply mean that default model values are not updated, and these default values
- * specify to the user that an error has occured and the app will not break
+ * phone numbers in order to identify which place in the model to update. However, failure should simply
+ * mean that default model values are not updated, and these default values specify to the user that an
+ * error has occured and the app will not break. TODO - test
  *
  * The fourth is to Yelp, and similarly to the Google Place Details request, failure of this request
  * should simple mean that default model values aren't updated, and these value should inform the user
- * that an error has occured, and the app will not break */
+ * that an error has occured, and the app will not break. Side note: because this is a cross domain request,
+ * JSONP must be used and does not support $.ajax.fail or $.ajax.error. TODO - test */
 
 
 
