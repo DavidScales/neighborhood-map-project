@@ -84,10 +84,12 @@ function placesCallback(results, status) {
 		window.performance.mark('places_list_built');
 
 		// For testing - TODO
-		console.log(results);
+		// console.log(results);
 
 		// Request more details for the Place objects from Google Places
 		getDetails();
+		// Request more details for the Place objects from Yelp
+		initYelp();
 	}
 }
 
@@ -245,12 +247,12 @@ var ViewModel = function() {
 
 		// Create a bounce animation for the active place
 		self.activePlace().marker.setAnimation(google.maps.Animation.BOUNCE); // Begin bouncing
-		setTimeout( function(){clickedPlace.marker.setAnimation(null)}, 1400 ); // Stop after 2 bounces (700ms each)
+		setTimeout( function(){clickedPlace.marker.setAnimation(null);}, 1400 ); // Stop after 2 bounces (700ms each)
 
 		// Build and open info window
 		self.activePlace().buildInfoWindow();
 		self.activePlace().infoWindow.open(map, self.activePlace().marker);
-	}
+	};
 };
 
 // Apply bindings to the ViewModel, linking UI/View with Model/data
@@ -313,11 +315,20 @@ function getDetails(){
 
 		// If all of the responses are complete (successful or not)
 		if (count >= places().length){
-			// Initialize Yelp requests
-			initYelp();
+			// Update loaded status
+			detailsLoaded = true;
+
+			// if Yelp responses are also complete
+			if (yelpLoaded) {
+				// Integrate Yelp data into model
+				integrateYelp();
+			}
 		}
 	}
 }
+
+// Keep track of when details have been loaded
+var detailsLoaded = false;
 
 /*******************************************************************************************
  * Yelp requests
@@ -406,27 +417,55 @@ function initYelp() {
 
 		*/
 	}
-};
+}
 
-// This callback recieves the Yelp data for each place, and incorperates it into the model.
+// Store Yelp responses
+var yelpResonses = [];
+// Keep track of when data has been loaded
+var yelpLoaded = false;
+
+// This callback recieves the Yelp data for each place, and stores it.
 function yelpCallback(data) {
+	yelpResonses.push(data.businesses[0]);
 
-	// Compare each place in the model with the response data
-	for (var i = 0, total = places().length; i < total; i++) {
+	// If Yelp responses are complete
+	if (yelpResonses.length == places().length) {
+		// Update loaded status
+		yelpLoaded = true;
 
-		// If the phone numbers or addresses match
-		if ( places()[i].raw_phone_number == data.businesses[0].phone || places()[i].shortAddress == data.businesses[0].location.address[0]) {
-
-			// Update model data
-			places()[i].review_count(data.businesses[0].review_count); // # of Yelp reviews
-			places()[i].yelp_rating_img_url(data.businesses[0].rating_img_url); // Yelp rating image
-			places()[i].yelp_url(data.businesses[0].url); // Corresponding Yelp web page
-			places()[i].yelp_image_url(data.businesses[0].image_url); // A Yelp image from the place
-			// End once a match is found
-			return;
+		// If Details responses are also complete
+		if (detailsLoaded) {
+			// Integrate Yelp data into model
+			integrateYelp();
 		}
 	}
-};
+}
+
+/* Integrate Yelp data into model. This function will only execute once all Details requests are complete, since
+ * the phone number data from the Details request are needed to integrate Yelp data with the model. */
+function integrateYelp() {
+
+	// Compare each place in the model with Yelp responses
+	for (var i = 0, total = places().length; i < total; i++) {
+
+		for (var j = 0, totalYelp = yelpResonses.length; j < totalYelp; j++) {
+
+			// If the phone numbers or addresses match
+			if ( places()[i].raw_phone_number == yelpResonses[j].phone || places()[i].shortAddress == yelpResonses[j].location.address[0]) {
+
+				// Update model data
+				places()[i].review_count(yelpResonses[j].review_count); // # of Yelp reviews
+				places()[i].yelp_rating_img_url(yelpResonses[j].rating_img_url); // Yelp rating image
+				places()[i].yelp_url(yelpResonses[j].url); // Corresponding Yelp web page
+				places()[i].yelp_image_url(yelpResonses[j].image_url); // A Yelp image from the place
+				// End once a match is found
+				return;
+			}
+		}
+	}
+}
+
+
 
 /* A note on failure: This app performs four external API requests.
  *
