@@ -443,6 +443,8 @@ function yelpCallback(data) {
  * the phone number data from the Details request are needed to integrate Yelp data with the model. */
 function integrateYelp() {
 
+	console.log('Integrating Yelp data into model...');
+
 	// Compare each place in the model with Yelp responses
 	for (var i = 0, total = places().length; i < total; i++) {
 
@@ -456,8 +458,7 @@ function integrateYelp() {
 				places()[i].yelp_rating_img_url(yelpResonses[j].rating_img_url); // Yelp rating image
 				places()[i].yelp_url(yelpResonses[j].url); // Corresponding Yelp web page
 				places()[i].yelp_image_url(yelpResonses[j].image_url); // A Yelp image from the place
-				// End once a match is found
-				return;
+				break;
 			}
 		}
 	}
