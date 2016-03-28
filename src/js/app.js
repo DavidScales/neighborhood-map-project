@@ -23,7 +23,7 @@
  * put into the view. A Google Places request is then build based on our neighborhood, and sent.
  * The response is a list of objects, each representing a takeout restaurant. A callback function
  * converts each of these into a 'Place' object, and stores them in a 'places' list. Finally,
- * the next stage of the app is initiated with a call to 'getDetails'.
+ * the next stage of the app is initiated with calls to 'getDetails' and 'initYelp'.
  */
 
 // Initialize map
@@ -334,10 +334,8 @@ var detailsLoaded = false;
  * Yelp requests
  *******************************************************************************************/
 
-/* This function is called once each place in the model has aquired phone number data from
- * the Google Place Details request (in 'getDetails'). It iterates through each place in the
- * model, and makes a request for Yelp data on each corresponding place. Once Yelp data is
- * recieved, the model is updated */
+/* This function iterates through each place in the model, and makes a request for Yelp data
+ * on each corresponding place. Once Yelp data is recieved, it is stored. */
 function initYelp() {
 
 	/* Thanks to MarkN on Udacity forums for help explaining Yelp request and OAuth use
@@ -465,11 +463,9 @@ function integrateYelp() {
 	}
 }
 
-
-
 /* A note on failure: This app performs four external API requests.
  *
- * The first is to Google Maps, to create the map and Google Places library. Should this fail, the
+ * The first is to Google Maps, to create the map and get the Google Places library. Should this fail, the
  * entire app's functionality is essentially destroyed, since all features are based on this. There
  * is thus no way to really compensate for this. Even if the app didn't break, there would be nothing
  * to display. TODO - add failure alert
@@ -485,8 +481,8 @@ function integrateYelp() {
  * mean that default model values are not updated, and these default values specify to the user that an
  * error has occured and the app will not break. TODO - test
  *
- * The fourth is to Yelp, and similarly to the Google Place Details request, failure of this request
- * should simple mean that default model values aren't updated, and these value should inform the user
+ * The fourth is to Yelp, and similar to the Google Place Details request, failure of this request
+ * should simply mean that default model values aren't updated, and these value should inform the user
  * that an error has occured, and the app will not break. Side note: because this is a cross domain request,
  * JSONP must be used and does not support $.ajax.fail or $.ajax.error. TODO - test */
 
