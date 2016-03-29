@@ -34,7 +34,9 @@ var service;
 function initMap() {
 
 	// Custom timing measurement - Google Maps callback called
-	window.performance.mark('maps_callback_start');
+	window.performance.mark('initMap_start');
+	window.performance.measure('wait_for_Maps', 'loaded_app', 'initMap_start');
+
 
 	// Set map starting center.
 	var startingLocation = new google.maps.LatLng(LAT, LNG);
@@ -45,6 +47,10 @@ function initMap() {
 		zoom: ZOOM
 	});
 
+    // Custom timing measurement
+    window.performance.mark('map_loaded');
+    window.performance.measure('map_loading', 'initMap_start', 'map_loaded');
+
 	// Set up Google Places request object
 	 var request = {
 	 	type: 'meal_takeaway', // Return results that are takeout capable restaurants
@@ -53,12 +59,13 @@ function initMap() {
 	 	radius: RADIUS // Limit results to those close by our neighborhood
 	 };
 
+	console.log('Requesting Google Places data...');
+
+	// Custom timing measurement
+	window.performance.mark('places_request_start');
+
 	// Prepare Google Places request
 	service = new google.maps.places.PlacesService(map);
-
-	// Custom timing measurement - Google Places request sent
-	window.performance.mark('places_request_start');
-	console.log('Requesting Google Places data...');
 
 	// Send Google Places request
 	service.textSearch(request, placesCallback);
@@ -69,6 +76,7 @@ function placesCallback(results, status) {
 
 	// Custom timing measurement - Google Places callback called
 	window.performance.mark('places_callback_start');
+	window.performance.measure('wait_for_Places', 'places_request_start', 'places_callback_start');
 
 	// Confirm successful response
 	if (status == google.maps.places.PlacesServiceStatus.OK){
@@ -80,11 +88,13 @@ function placesCallback(results, status) {
 	    for (var i = 0; i < 10; i++) { //
 			places.push( new Place(results[i]) );
 	    }
-	    // Custom timing measurement - places list built
-		window.performance.mark('places_list_built');
 
 		// For testing - TODO
-		// console.log(results);
+		console.log(results);
+
+	    // Custom timing measurement
+	    window.performance.mark('places_loaded');
+	    window.performance.measure('Places_loading', 'places_callback_start', 'places_loaded');
 
 		// Request more details for the Place objects from Google Places
 		getDetails();
@@ -271,6 +281,10 @@ function getDetails(){
 
 	console.log('Requesting Google Place Details data...');
 
+    // Custom timing measurement
+    window.performance.mark('getDetails_called');
+    // window.performance.measure('call_details_delay', 'places_loaded', 'getDetails_called');
+
 	// Keep track of when requests have been recieved for all places
 	var count = 0;
 
@@ -318,6 +332,10 @@ function getDetails(){
 			// Update loaded status
 			detailsLoaded = true;
 
+		    // Custom timing measurement
+		    window.performance.mark('details_loaded');
+		    window.performance.measure('wait_for_Details', 'getDetails_called', 'details_loaded');
+
 			// if Yelp responses are also complete
 			if (yelpLoaded) {
 				// Integrate Yelp data into model
@@ -325,6 +343,10 @@ function getDetails(){
 			}
 		}
 	}
+
+	// Custom timing measurement
+    window.performance.mark('getDetails_done');
+    window.performance.measure('details_executing', 'getDetails_called', 'getDetails_done');
 }
 
 // Keep track of when details have been loaded
@@ -343,6 +365,10 @@ function initYelp() {
 
 	console.log('Requesting Yelp data...');
 
+    // Custom timing measurement
+    window.performance.mark('initYelp_called');
+    // window.performance.measure('call_yelp_delay', 'getDetails_done', 'initYelp_called');
+
 	// Abstract some Yelp API / OAuth parameters
 	// These should ideally be hidden somehow...
 	var yelp_url = 'https://api.yelp.com/v2/search?';
@@ -350,12 +376,17 @@ function initYelp() {
 	var YELP_KEY_SECRET = 'GyunKRoE9EkuYwUe_zzFkJ24JG8';
 	var YELP_TOKEN = 'LtonUTLkQVzi-rA3HEp0rWvmLd9DuvTm';
 	var YELP_TOKEN_SECRET = '_AzbVT0ASeJhb1BT92FS1kofRk8';
+	var parameters;
+	var settings;
 
 	// For each place in the model
 	for (var i = 0, total = places().length; i < total; i++) {
 
+		// Custom timing measurement
+		window.performance.mark('yelp_call_prep_' + i);
+
 		// Set required Yelp API parameters object
-		var parameters = {
+		parameters = {
 			// OAuth required values
 			oauth_consumer_key: YELP_KEY,
 			oauth_token: YELP_TOKEN,
@@ -376,13 +407,18 @@ function initYelp() {
 		parameters.oauth_signature = encodedSignature;
 
 		// Set settings object for AJAX request
-		var settings = {
+		settings = {
 			url: yelp_url, // url for Yelp API
 			data: parameters, // Send the Yelp API parameters
 			cache: true,  // This is crucial to include as well to prevent jQuery from adding on a cache-buster parameter "_=23489489749837", invalidating our oauth-signature
 			dataType: 'jsonp', // Need jsonp for cross-domain requests
 			jsonp: false, // Prevent jQuery from defining its own callback function, which invalidates OAuth stuff
 		};
+
+		// Custom timing measurement
+		window.performance.mark('yelp_call_' + i);
+		window.performance.mark('last_yelp_call');
+		window.performance.measure('yelp_call_execution_' + i, 'yelp_call_prep_' + i, 'yelp_call_' + i);
 
 		// Send AJAX query via jQuery library
 		$.ajax(settings);
@@ -415,6 +451,10 @@ function initYelp() {
 
 		*/
 	}
+
+	// Custom timing measurement
+    window.performance.mark('yelpInit_done');
+    window.performance.measure('yelp_executing', 'initYelp_called', 'yelpInit_done');
 }
 
 // Store Yelp responses
@@ -426,10 +466,19 @@ var yelpLoaded = false;
 function yelpCallback(data) {
 	yelpResonses.push(data.businesses[0]);
 
+	// Custom timing measurement
+	window.performance.mark('last_yelp_response');
+	window.performance.measure('last_yelp_response_wait', 'last_yelp_call', 'last_yelp_response');
+
 	// If Yelp responses are complete
 	if (yelpResonses.length == places().length) {
+
 		// Update loaded status
 		yelpLoaded = true;
+
+		// Custom timing measurement
+	    window.performance.mark('yelp_loaded');
+	    window.performance.measure('wait_for_Yelp', 'initYelp_called', 'yelp_loaded');
 
 		// If Details responses are also complete
 		if (detailsLoaded) {
@@ -444,6 +493,14 @@ function yelpCallback(data) {
 function integrateYelp() {
 
 	console.log('Integrating Yelp data into model...');
+
+    // Custom timing measurement
+    window.performance.mark('integrateYelp_called');
+    // window.performance.measure('yelp_loaded_integration_delay', 'yelp_loaded', 'integrateYelp_called');
+    // window.performance.measure('details_loaded_integration_delay', 'details_loaded', 'integrateYelp_called');
+
+    // window.performance.measure('yelp_start_to_integration_start', 'initYelp_called', 'integrateYelp_called');
+    // window.performance.measure('details_start_to_integration_start', 'getDetails_called', 'integrateYelp_called');
 
 	// Compare each place in the model with Yelp responses
 	for (var i = 0, total = places().length; i < total; i++) {
@@ -462,6 +519,22 @@ function integrateYelp() {
 			}
 		}
 	}
+
+    // Custom timing measurement
+    window.performance.mark('yelp_integrated');
+    window.performance.measure('integration_execution', 'integrateYelp_called', 'yelp_integrated');
+
+    var timingMeasurements = window.performance.getEntriesByType('measure');
+    for (var i = 0, total = timingMeasurements.length; i < total; i++) {
+
+    	var start = Math.floor(timingMeasurements[i].startTime);
+    	var duration = Math.floor(timingMeasurements[i].duration);
+    	var name = timingMeasurements[i].name;
+    	var end = start + duration;
+
+    	console.log(start + ': ' + name + ' (' + duration + 'ms) : ' + end);
+    	console.log('----');
+    }
 }
 
 /* A note on failure: This app performs four external API requests.

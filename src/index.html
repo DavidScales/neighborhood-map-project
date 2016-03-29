@@ -20,6 +20,12 @@
     </head>
 
     <body>
+
+         <script>
+            // Custom timing measurement
+            window.performance.mark('loading_body');
+        </script>
+
         <!-- Places filter input -->
         <p> Filter results: <input type="text" name="filter-input" data-bind="textInput: filterText"> </p>
 
@@ -40,12 +46,30 @@
         <div id="map"></div>
 
         <!-- Load libraries -->
+        <script>
+            // Custom timing measurement
+            window.performance.mark('loading_libraries');
+            window.performance.measure('html_body', 'loading_body', 'loading_libraries');
+        </script>
+
         <script src="js/lib/jquery-1.12.2.min.js?__inline=true"></script>
         <script src="js/lib/knockout-3.4.0.min.js?__inline=true"></script>
         <script src="js/lib/oauth-signature.min.js??__inline=true"></script>
 
         <!-- Load and run main js file -->
+        <script>
+            // Custom timing measurement
+            window.performance.mark('loading_app');
+            window.performance.measure('library_execution', 'loading_libraries', 'loading_app');
+        </script>
+
         <script src="js/app.js?__inline=true"></script>
+
+        <script>
+            // Custom timing measurement
+            window.performance.mark('loaded_app');
+            window.performance.measure('app_execution', 'loading_app', 'loaded_app');
+        </script>
 
         <!-- Load Google Maps API  -->
         <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBUjsdD1ThEiL98_mDnT8sCPAu-ED0DeYg&callback=initMap&libraries=places" async></script>
