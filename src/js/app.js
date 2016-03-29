@@ -350,12 +350,14 @@ function initYelp() {
 	var YELP_KEY_SECRET = 'GyunKRoE9EkuYwUe_zzFkJ24JG8';
 	var YELP_TOKEN = 'LtonUTLkQVzi-rA3HEp0rWvmLd9DuvTm';
 	var YELP_TOKEN_SECRET = '_AzbVT0ASeJhb1BT92FS1kofRk8';
+	var settings; // Settings object for AJAX request
+	var paramters; // Settings object for AJAX request
 
 	// For each place in the model
 	for (var i = 0, total = places().length; i < total; i++) {
 
 		// Set required Yelp API parameters object
-		var parameters = {
+		parameters = {
 			// OAuth required values
 			oauth_consumer_key: YELP_KEY,
 			oauth_token: YELP_TOKEN,
@@ -376,7 +378,7 @@ function initYelp() {
 		parameters.oauth_signature = encodedSignature;
 
 		// Set settings object for AJAX request
-		var settings = {
+		settings = {
 			url: yelp_url, // url for Yelp API
 			data: parameters, // Send the Yelp API parameters
 			cache: true,  // This is crucial to include as well to prevent jQuery from adding on a cache-buster parameter "_=23489489749837", invalidating our oauth-signature
