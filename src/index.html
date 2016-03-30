@@ -15,11 +15,17 @@
         <link rel="shortcut icon" type="images/png" href="images/map-marker-favicon.png">
 
         <!-- Set title -->
-        <title>Neighborhood Takeout</title>
+        <title>Neighborhood Restaurants</title>
 
     </head>
 
     <body>
+        <!-- TESTING -->
+        <script>
+            // User Timing API - for testing perf
+            window.performance.mark('start_body');
+        </script>
+
         <!-- Places filter input -->
         <p> Filter results: <input type="text" name="filter-input" data-bind="textInput: filterText"> </p>
 
@@ -30,7 +36,6 @@
         <ul id="places-list" data-bind="foreach: filteredList">
             <li class="places-list-item">
                 <span data-bind="text: name"></span>
-                <span data-bind="text: open"></span>
                 <button data-bind="click: $root.setActivePlace"> ACTIVATE </button>
                 <span data-bind="css: {active: $data == $root.activePlace() }"> active?</span>
             </li>
@@ -39,16 +44,37 @@
         <!-- Google map  -->
         <div id="map"></div>
 
+        <!-- TESTING -->
+        <script>
+            // User Timing API - for testing perf
+            window.performance.mark('start_libraries');
+            window.performance.measure('Load HTML', 'start_body', 'start_libraries');
+        </script>
+
         <!-- Load libraries -->
         <script src="js/lib/jquery-1.12.2.min.js?__inline=true"></script>
         <script src="js/lib/knockout-3.4.0.min.js?__inline=true"></script>
         <script src="js/lib/oauth-signature.min.js??__inline=true"></script>
 
+        <!-- TESTING -->
+        <script>
+            // User Timing API - for testing perf
+            window.performance.mark('start_app');
+            window.performance.measure('Load libraries', 'start_libraries', 'start_app');
+        </script>
+
         <!-- Load and run main js file -->
         <script src="js/app.js?__inline=true"></script>
 
+        <!-- TESTING -->
+        <script>
+            // User Timing API - for testing perf
+            window.performance.mark('maps_request');
+            window.performance.measure('Load app', 'start_app', 'maps_request');
+        </script>
+
         <!-- Load Google Maps API  -->
-        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBUjsdD1ThEiL98_mDnT8sCPAu-ED0DeYg&callback=initMap&libraries=places" async></script>
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBUjsdD1ThEiL98_mDnT8sCPAu-ED0DeYg&callback=initMap" async></script>
 
     </body>
 </html>
