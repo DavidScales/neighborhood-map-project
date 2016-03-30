@@ -26,6 +26,7 @@
             window.performance.mark('start_body');
         </script>
 
+
         <!-- Places filter input -->
         <p> Filter results: <input type="text" name="filter-input" data-bind="textInput: filterText"> </p>
 
@@ -51,6 +52,7 @@
             window.performance.measure('Load HTML', 'start_body', 'start_libraries');
         </script>
 
+
         <!-- Load libraries -->
         <script src="js/lib/jquery-1.12.2.min.js?__inline=true"></script>
         <script src="js/lib/knockout-3.4.0.min.js?__inline=true"></script>
@@ -63,6 +65,7 @@
             window.performance.measure('Load libraries', 'start_libraries', 'start_app');
         </script>
 
+
         <!-- Load and run main js file -->
         <script src="js/app.js?__inline=true"></script>
 
@@ -73,8 +76,9 @@
             window.performance.measure('Load app', 'start_app', 'maps_request');
         </script>
 
+
         <!-- Load Google Maps API  -->
-        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBUjsdD1ThEiL98_mDnT8sCPAu-ED0DeYg&callback=initMap" async></script>
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBUjsdD1ThEiL98_mDnT8sCPAu-ED0DeYg&callback=initMap" onerror="mapsError()" async></script>
 
     </body>
 </html>

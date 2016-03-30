@@ -32,8 +32,6 @@ function getYelp() {
 	window.performance.mark('getYelp_called');
 	window.performance.measure('getYelp delay', 'start_app', 'getYelp_called');
 
-	console.log('Requesting Yelp data...');
-
 	// Abstract some Yelp API / OAuth parameters
 	// These should ideally be hidden somehow...
 	var yelp_url = 'https://api.yelp.com/v2/search?';
@@ -54,7 +52,7 @@ function getYelp() {
 		callback: 'yelpCallback', // This is crucial to include for jsonp implementation in AJAX or else the oauth-signature will be wrong.
 		// Place-specific parameters for request
 		location: yelpStartingLocation, // Location of the place
-		term: 'food', // Search for food (broader than 'restaurant')
+		term: 'food', // Search for food (broader than "restaurant")
 		limit: 10, // Limit number of search results to reduce clutter
 		radius_filter: RADIUS // Narrow the physical area of search
 	};
@@ -66,16 +64,24 @@ function getYelp() {
 
 	// Set settings object for AJAX request
 	var settings = {
-		url: yelp_url, // url for Yelp API
+		url: yelp_url, // base url for Yelp API
 		data: parameters, // Send the Yelp API parameters
 		cache: true,  // This is crucial to include as well to prevent jQuery from adding on a cache-buster parameter "_=23489489749837", invalidating our oauth-signature
 		dataType: 'jsonp', // Need jsonp for cross-domain requests
-		jsonp: false, // Prevent jQuery from defining its own callback function, which invalidates OAuth stuff
+		jsonp: false // Prevent jQuery from defining its own callback function, which invalidates OAuth stuff
 	};
 
  	// User Timing API - for testing perf
 	window.performance.mark('yelp_data_requested');
 	window.performance.measure('getYelp executing', 'getYelp_called', 'yelp_data_requested');
+
+	// Set a timeout in case Yelp request fails
+	/* This is required because our Yelp request is cross origin and uses JSONP,
+	 * which will not execute our callback if an error occurs */
+	yelpTimeout = window.setTimeout(function(){
+		alert("It looks like Yelp isn't responding :( Try refreshing the page."+
+		      " If that doesn't work, consider going outside :D ");
+	}, 4000);
 
 	// Send AJAX query via jQuery library
 	$.ajax(settings);
@@ -114,7 +120,8 @@ function getYelp() {
  * and stores them in an observable array. */
 function yelpCallback(data) {
 
-	console.log('Recieving Yelp data...');
+	// Clear the Yelp error timeout, since we have recieved a response
+	window.clearTimeout(yelpTimeout);
 
  	// User Timing API - for testing perf
 	window.performance.mark('yelpCallback_start');
@@ -146,8 +153,6 @@ function initMap() {
 	window.performance.mark('initMap_called');
 	window.performance.measure('Wait for maps', 'maps_request', 'initMap_called');
 
-	console.log('Setting up map...');
-
 	// Set map starting center.
 	var googleStartingLocation = new google.maps.LatLng(LAT, LNG);
 
@@ -162,6 +167,14 @@ function initMap() {
 	window.performance.measure('Load map', 'initMap_called', 'initMap_done');
 }
 
+/* Alert the user if Google Maps failed to load. This function is called if the Maps
+ * request is unsuccessful */
+function mapsError() {
+	alert("It looks like Google Maps isn't working :( Try refreshing the page."+
+		  " If that doesn't work, consider going outside :D");
+	// document.location.href = 'http://www.mozilla.org' // Relocate to apology page
+}
+
 /*******************************************************************************************
  * Model
  *******************************************************************************************/
@@ -170,9 +183,6 @@ function initMap() {
  * establish each place's info window, map marker, and map marker listener.
  */
 var Place = function(placeData) {
-
-	// User Timing API - for testing perf
-	// window.performance.mark('place_start');
 
 	// Store local scope
 	var self = this;
@@ -201,6 +211,7 @@ var Place = function(placeData) {
 
 	// Listen to marker clicks
 	this.marker.addListener('click', function() {
+
 		// On click, set this place to be the "active" place
 		viewModel.setActivePlace(self);
 	});
@@ -218,10 +229,6 @@ var Place = function(placeData) {
 	self.infoWindow = new google.maps.InfoWindow({
 		content: self.infoWindowContent
 	});
-
-	// User Timing API - for testing perf
-	// window.performance.mark('place_end');
-	// window.performance.measure('Building place', 'place_start', 'place_end');
 };
 
 /* Places are stored in an observable array, which is bound to the #places-list <ul>
@@ -246,9 +253,6 @@ var ViewModel = function() {
 	 * time as the user changes the filter text in the <input>. */
 	self.filteredList = ko.computed(function(){
 
-		// User Timing API - for testing perf
-		// window.performance.mark('filter_start');
-
 		// Store the filter text and the places list, limiting re-computation
 		var filterText = self.filterText().toLowerCase(); // Filter text, lower cased
 		var placesCopy = places().slice(); // Store a shallow copy of places
@@ -272,10 +276,6 @@ var ViewModel = function() {
 			}
 		}
 
-		// User Timing API - for testing perf
-		// window.performance.mark('filter_end');
-		// window.performance.measure('Filtering', 'filter_start', 'filter_end');
-
 		// Return only places that contain the filter text
 		return filteredList;
 	});
@@ -294,10 +294,10 @@ var ViewModel = function() {
 		// If the active place has been initialized
 		if (self.activePlace() !== 'uninitialized') {
 
-			// Reset the active place's map marker
+			// Reset the current active place's map marker
 			self.activePlace().marker.setIcon(null);
 
-			// Close the active place's info window
+			// Close the current active place's info window
 			self.activePlace().infoWindow.close();
 		}
 
@@ -320,6 +320,27 @@ var ViewModel = function() {
 var viewModel = new ViewModel();
 ko.applyBindings(viewModel);
 
+// Begin Yelp request
+getYelp();
+
+// Testing with User Timing API - log perf measurements
+function logMeasurements(){
+
+	var measures = window.performance.getEntriesByType('measure');
+
+	var name, start, end, duration;
+
+	for (var i = 0; i < measures.length; i++){
+
+		name = measures[i].name;
+		duration = Math.floor(measures[i].duration);
+		start = Math.floor(measures[i].startTime);
+		end = start + duration;
+
+		console.log(name+': @'+start+'ms, taking '+duration+'ms, ending at '+end+'ms');
+	}
+}
+
 /* A note on failure: This app performs two external API requests.
  *
  * The first is to Google Maps, to create the map. Should this fail, the
@@ -336,23 +357,4 @@ ko.applyBindings(viewModel);
  * Side note: because this is a cross domain request,
  * JSONP must be used and does not support $.ajax.fail or $.ajax.error. TODO - test */
 
-getYelp();
-
-// Testing with User Timing API - log measurements
-function logMeasurements(){
-
-	var measures = window.performance.getEntriesByType('measure');
-
-	var name, start, end, duration;
-
-	for (var i = 0; i < measures.length; i++){
-
-		name = measures[i].name;
-		duration = Math.floor(measures[i].duration);
-		start = Math.floor(measures[i].startTime);
-		end = start + duration;
-
-		console.log(start + ': ' + name + '(' + duration + '): ' + end);
-	}
-}
 
