@@ -1,12 +1,36 @@
 /*
-  1. Inline (and minify) css and js. NOT WORKING FOR JS
-  2. Minify html and inline js. ALSO NOT WORKING FOR JS
+  1. Inline css (minify too) and js (don't minify yet).
+  2. Minify html and inlined js.
   3. Optimize images.
 */
 
 module.exports = function(grunt) {
 
   grunt.initConfig({
+
+    /* Minify css files.
+    https://github.com/gruntjs/grunt-contrib-cssmin */
+    // cssmin: {
+    //   target: {
+    //     files: [{
+    //       expand: true,
+    //       cwd: 'src/css',
+    //       src: ['style.css'],
+    //       dest: 'dist/css',
+    //       ext: '.css'
+    //     }]
+    //   }
+    // },
+
+    /* Uglify js
+    https://github.com/gruntjs/grunt-contrib-uglify */
+    // uglify: {
+    //   my_target: {
+    //     files: {
+    //       'dist/js/app.js': ['src/js/app.js'], // dest : src
+    //     }
+    //   }
+    // },
 
     /*  Minify and internalize css and js files.
      *
@@ -15,21 +39,15 @@ module.exports = function(grunt) {
     inline: {
       task1: {
         options: {
-          cssmin: true
-        },
-        src: 'src/index.html',
-        dest: 'dist/index.html'
-      },
-      task2: {
-        options: {
-          uglify: true
+          cssmin: true,
+          uglify: false // Don't try to minify, causing errors on libraries that are already minified
         },
         src: 'src/index.html',
         dest: 'dist/index.html'
       }
     },
 
-    /* Minify html files, including inline js
+    /* Minify html files, including inlined js
     https://github.com/gruntjs/grunt-contrib-htmlmin */
     htmlmin: {
       dist: {
@@ -70,5 +88,5 @@ module.exports = function(grunt) {
   // replaces grunt.loadNpmTask('grunt-...'); lines for each plugin
   require('load-grunt-tasks')(grunt);
 
-  grunt.registerTask('default', ['inline', 'htmlmin', 'imageoptim']);
+  grunt.registerTask('default', [/*'cssmin', 'uglify',*/ 'inline', 'htmlmin', 'imageoptim']);
 };

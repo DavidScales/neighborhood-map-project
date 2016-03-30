@@ -197,13 +197,15 @@ var Place = function(placeData) {
 	this.image = placeData.image_url; // A Yelp image associated with the place
 	this.snippetText = placeData.snippet_text; // A Yelp snippet associated with the place
 	this.yelpUrl = placeData.url; // Link to the place's Yelp web page
-
-	var lat = placeData.location.coordinate.latitude; // Latitude for map marker placement
-	var lng = placeData.location.coordinate.longitude;// Longitude for map marker placement
+	this.lat = placeData.location.coordinate.latitude; // Latitude for map marker placement
+	this.lng = placeData.location.coordinate.longitude;// Longitude for map marker placement
 
 	// Create and append Google map markers for each place based on location
 	this.marker = new google.maps.Marker({
-		position: {lat, lng},
+		position: {
+			lat: self.lat,
+			lng: self.lng
+		},
 		map: map,
 		title: self.name, // Set title to place name
 		animation: google.maps.Animation.DROP // Add drop animation for marker initialization
@@ -340,21 +342,3 @@ function logMeasurements(){
 		console.log(name+': @'+start+'ms, taking '+duration+'ms, ending at '+end+'ms');
 	}
 }
-
-/* A note on failure: This app performs two external API requests.
- *
- * The first is to Google Maps, to create the map. Should this fail, the
- * entire app's functionality is essentially destroyed, since all features are based on this. There
- * is thus no way to really compensate for this. Even if the app didn't break, there would be nothing
- * to display. TODO - add failure alert
- *
- * The second is to Yelp, and similar to the Google Map request, failure of this request
- * Should this fail, the
- * entire app's functionality is essentially destroyed, since all features are based on this. There
- * is thus no way to really compensate for this. Even if the app didn't break, there would be nothing
- * to display. TODO - add failure alert
- *
- * Side note: because this is a cross domain request,
- * JSONP must be used and does not support $.ajax.fail or $.ajax.error. TODO - test */
-
-
