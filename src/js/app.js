@@ -5,25 +5,75 @@
  */
 
 /*******************************************************************************************
- * Constants
+ * Check localStorage and initialize location data
  *******************************************************************************************/
 
-// Geographic coordinates that will be used to define our map's initial center
-var LAT = 37.5181;
-var LNG = -122.2917;
 // The map's starting zoom level
 var ZOOM = 13;
 // The search radius, in meters
 var RADIUS = 5000;
-// Yelp initial search location
-var yelpStartingLocation = 'Belmont, California';
+
+
+/*
+ * Geographic coordinates that will be used to define our map's initial center
+ */
+
+// Check localStorage for data from previous user visit
+var mapCenterStored = localStorage.getItem('mapCenter');
+
+// If data was stored, set the map center to the existing map canter
+if (mapCenterStored !== null) {
+	var mapCenter = JSON.parse(mapCenterStored);
+}
+
+// If no data was stored, set the map center to a default
+else {
+	var mapCenter = {
+		'lat': 37.5181,
+		'lng': -122.2917
+	};
+}
+
+
+/*
+ * Search term used for Yelp requests
+ */
+
+// Check localStorage for data from previous user visit
+var yelpLocationStored = localStorage.getItem('yelpLocation');
+
+// If data was stored, use the existing search term
+if (yelpLocationStored !== null) {
+	var yelpLocation = yelpLocationStored;
+}
+
+// If no data was stored, use a default search term
+else {
+	var yelpLocation = 'Belmont, California';
+}
+
+
+/*
+ * If Yelp data doesn't exist from a previous user visit, request new Yelp data.
+ * If old Yelp data does exist, the old data will be loaded instead, once Google Maps has responded.
+ */
+
+// Check localStorage for data from previous user visit
+var placesStoredString = localStorage.getItem('placesStored');
+
+// If data is absent, request new Yelp data
+if (placesStoredString === null) {
+
+	// Begin Yelp request
+	getYelp();
+}
 
 /*******************************************************************************************
  * Yelp requests
  *******************************************************************************************/
 
 // Holder for storing Yelp data in localStorage
-var placesStorage = [];
+var placesStorage;
 
 /* This function makes a request to the Yelp API for local restaurant data */
 function getYelp() {
@@ -54,7 +104,7 @@ function getYelp() {
 		oauth_version : '1.0',
 		callback: 'yelpCallback', // This is crucial to include for jsonp implementation in AJAX or else the oauth-signature will be wrong.
 		// Place-specific parameters for request
-		location: yelpStartingLocation, // Location of the place
+		location: yelpLocation, // Location of the place
 		term: 'food', // Search for food (broader than "restaurant")
 		limit: 10, // Limit number of search results to reduce clutter
 		radius_filter: RADIUS // Narrow the physical area of search
@@ -129,15 +179,24 @@ function yelpCallback(data) {
 	window.performance.mark('yelpCallback_start');
 	window.performance.measure('Wait for Yelp data', 'yelp_data_requested', 'yelpCallback_start');
 
+	// Clear existing places data
+	places([]);
+	placesStorage = [];
+
+	// For each place returned
 	for (var i = 0, total = data.businesses.length; i < total; i++) {
+
 		// Convert data to Place object and add to observable array
 		places.push( new Place(data.businesses[i]) );
+
 		// Save raw data for localStorage
 		placesStorage.push(data.businesses[i]);
     }
 
-    // Store raw data in localStorage
-    localStorage.setItem('placesStorage', JSON.stringify(placesStorage) );
+    // Store/update raw places data in localStorage
+    localStorage.setItem('placesStored', JSON.stringify(placesStorage) );
+    // Store/update Yelp location data in localStorage
+    localStorage.setItem('yelpLocation', yelpLocation);
 
  	// User Timing API - for testing perf
 	window.performance.mark('yelpCallback_end');
@@ -146,16 +205,18 @@ function yelpCallback(data) {
 
 /* If Yelp data persists from the last user visit, this function will load it into the places array.
  * This is used in lieu of an unnecessary Yelp request */
-function useStoredData(storedDataString) {
+function loadStoredData() {
 
-	// Convert data string into JSON object
-	storedData = JSON.parse(storedDataString);
+	console.log('loading stored data into places');
+
+	// Convert places data string into JSON object
+	storedPlaces = JSON.parse(placesStoredString);
 
 	// For each place, create and append a new Place object
-	for (var i = 0, total = storedData.length; i < total; i++) {
+	for (var i = 0, total = storedPlaces.length; i < total; i++) {
 
 		// Convert data to Place object and add to observable array
-		places.push( new Place(storedData[i]) );
+		places.push( new Place(storedPlaces[i]) );
 
 	}
 }
@@ -171,6 +232,7 @@ function useStoredData(storedDataString) {
 // Initialize map
 var map;
 var service;
+var geocoder; // Used later for converting locations to coordinates
 
 // initMap called by Google Maps API callback
 function initMap() {
@@ -179,12 +241,9 @@ function initMap() {
 	window.performance.mark('initMap_called');
 	window.performance.measure('Wait for maps', 'maps_request', 'initMap_called');
 
-	// Set map starting center.
-	var googleStartingLocation = new google.maps.LatLng(LAT, LNG);
-
 	// Create map in the #map div
 	map = new google.maps.Map(document.getElementById('map'), {
-		center: googleStartingLocation,
+		center: mapCenter,
 		zoom: ZOOM
 	});
 
@@ -192,13 +251,13 @@ function initMap() {
 	window.performance.mark('initMap_done');
 	window.performance.measure('Load map', 'initMap_called', 'initMap_done');
 
-	/* Once maps has successfull loaded */
+	/* Once maps has successfully loaded */
 
 	/* If places data exists from last user visit, simply load that data into places array */
-	if (storedDataString !== null) {
+	if (placesStoredString !== null) {
 
 		// Load from last visit into places array
-		useStoredData(storedDataString);
+		loadStoredData();
 	}
 }
 
@@ -282,7 +341,61 @@ var ViewModel = function() {
 	// Store local scope
 	var self = this;
 
-	/* Minimum star value for filtering by rating. This is bound to a slider <input> */
+	// A bound text <input> allows searching for new locations
+	self.searchText = ko.observable('');
+
+	/* This function searches for places in a new location based on bound user <input>.
+	 * It is executed on UI click.
+	 */
+	self.locationSearch = function() {
+
+		// For each existing place
+		for (var i = 0, total = places().length; i < total; i++) {
+
+			// Remove the corresponding map marker
+			places()[i].marker.setMap(null);
+		}
+
+		// Update the Yelp location to the user's bound <input>
+		yelpLocation = self.searchText();
+
+		// Begin a new Yelp request with the new location
+		getYelp();
+
+		/*
+		 * Translate the new Yelp location into map coordinates using Google geocoding
+		 */
+
+		// Prepare a geocode request
+		geocoder = new google.maps.Geocoder();
+		var geocodeRequest = {
+			'address': yelpLocation
+		};
+
+		// Send the request
+		geocoder.geocode( geocodeRequest, function(results, status) {
+
+			// If the request is successful
+			if (status == google.maps.GeocoderStatus.OK) {
+
+				// Update the map center
+				mapCenter = results[0].geometry.location;
+
+				// Update the map center in localStorage
+				localStorage.setItem('mapCenter', JSON.stringify(mapCenter) );
+
+				// Re-center the map
+				map.setCenter(mapCenter);
+			}
+
+			// If the request is unsuccessful, alert the user
+			else {
+				alert("Google could not fine that location :( Error: " + status);
+			}
+		});
+	}
+
+	// Minimum star value for filtering by rating. This is bound to a slider <input>
 	self.ratingNumber = ko.observable(1);
 
 	// Store text descriptions of minimum star value
@@ -310,6 +423,7 @@ var ViewModel = function() {
 
 		// For each place in the places list
 		for (var i = 0; i < placesLength; i++) {
+
 			// If the place name (lower case) contains the filter text, and the rating is above the minimum
 			if ( placesCopy[i].name.toLowerCase().includes(filterText) &&  placesCopy[i].rating >= self.ratingNumber() ) {
 
@@ -369,16 +483,9 @@ var ViewModel = function() {
 var viewModel = new ViewModel();
 ko.applyBindings(viewModel);
 
-// Check local storage for persistent data
-var storedDataString = localStorage.getItem('placesStorage');
-
-/* If Yelp data doesn't exist from a pervious user visit, request new Yelp data.
- * If old Yelp data does exist, the old data will be loaded instead, once Google Maps has responded. */
-if (storedDataString === null) {
-
-	// Begin Yelp request
-	getYelp();
-}
+/*******************************************************************************************
+ * Testing
+ *******************************************************************************************/
 
 // Testing with User Timing API - log perf measurements
 function logMeasurements(){
