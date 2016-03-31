@@ -22,6 +22,9 @@ var yelpStartingLocation = 'Belmont, California';
  * Yelp requests
  *******************************************************************************************/
 
+// Holder for storing Yelp data in localStorage
+var placesStorage = [];
+
 /* This function makes a request to the Yelp API for local restaurant data */
 function getYelp() {
 
@@ -113,11 +116,10 @@ function getYelp() {
 	// Error occuring...
 	// {"error": {"text": "One or more parameters are missing in request", "id": "MISSING_PARAMETER", "field": "oauth_consumer_key"}}
 	*/
-
 }
 
 /* This callback recieves the Yelp data for the local restaurants, converts them into Place objects,
- * and stores them in an observable array. */
+ * and stores them in an observable array. Also stores data as normal objects, for localStorage */
 function yelpCallback(data) {
 
 	// Clear the Yelp error timeout, since we have recieved a response
@@ -127,20 +129,44 @@ function yelpCallback(data) {
 	window.performance.mark('yelpCallback_start');
 	window.performance.measure('Wait for Yelp data', 'yelp_data_requested', 'yelpCallback_start');
 
-	for (var i = 0, total = data.businesses.length; i < total; i++) { //
+	for (var i = 0, total = data.businesses.length; i < total; i++) {
+		// Convert data to Place object and add to observable array
 		places.push( new Place(data.businesses[i]) );
+		// Save raw data for localStorage
+		placesStorage.push(data.businesses[i]);
     }
+
+    // Store raw data in localStorage
+    localStorage.setItem('placesStorage', JSON.stringify(placesStorage) );
 
  	// User Timing API - for testing perf
 	window.performance.mark('yelpCallback_end');
 	window.performance.measure('yelpCallback executing', 'yelpCallback_start', 'yelpCallback_end');
 }
 
+/* If Yelp data persists from the last user visit, this function will load it into the places array.
+ * This is used in lieu of an unnecessary Yelp request */
+function useStoredData(storedDataString) {
+
+	// Convert data string into JSON object
+	storedData = JSON.parse(storedDataString);
+
+	// For each place, create and append a new Place object
+	for (var i = 0, total = storedData.length; i < total; i++) {
+
+		// Convert data to Place object and add to observable array
+		places.push( new Place(storedData[i]) );
+
+	}
+}
+
 /*******************************************************************************************
  * Google Maps initialization, Google Places request
  *******************************************************************************************/
 /* A Google Map is created, centered on our initial neighborhood, and put into the view.
- * This function is called as a callback to the Google Maps API request in index.html */
+ * This function is called as a callback to the Google Maps API request in index.html.
+ * Additionally, if persistent Yelp data from a previous user visit exists, this function
+ * will kick off the loading of that data (and the Yelp request will be skipped). */
 
 // Initialize map
 var map;
@@ -165,6 +191,15 @@ function initMap() {
 	// User Timing API - for testing perf
 	window.performance.mark('initMap_done');
 	window.performance.measure('Load map', 'initMap_called', 'initMap_done');
+
+	/* Once maps has successfull loaded */
+
+	/* If places data exists from last user visit, simply load that data into places array */
+	if (storedDataString !== null) {
+
+		// Load from last visit into places array
+		useStoredData(storedDataString);
+	}
 }
 
 /* Alert the user if Google Maps failed to load. This function is called if the Maps
@@ -334,8 +369,16 @@ var ViewModel = function() {
 var viewModel = new ViewModel();
 ko.applyBindings(viewModel);
 
-// Begin Yelp request
-getYelp();
+// Check local storage for persistent data
+var storedDataString = localStorage.getItem('placesStorage');
+
+/* If Yelp data doesn't exist from a pervious user visit, request new Yelp data.
+ * If old Yelp data does exist, the old data will be loaded instead, once Google Maps has responded. */
+if (storedDataString === null) {
+
+	// Begin Yelp request
+	getYelp();
+}
 
 // Testing with User Timing API - log perf measurements
 function logMeasurements(){
