@@ -247,11 +247,22 @@ var ViewModel = function() {
 	// Store local scope
 	var self = this;
 
-	// A bound text <input> allows filtering of places.
+	/* Minimum star value for filtering by rating. This is bound to a slider <input> */
+	self.ratingNumber = ko.observable(1);
+
+	// Store text descriptions of minimum star value
+	self.ratingValues = ['One star and up', 'Two star and up', 'Three star and up', 'Four star and up', 'Five star only'];
+
+	// Compute the current text description based on the current minimum star value. Bound to UI.
+	self.ratingText = ko.computed(function(){
+		return self.ratingValues[self.ratingNumber() - 1];
+	});
+
+	// A bound text <input> allows filtering of places by name.
 	self.filterText = ko.observable('');
 
 	/* This is the list of places to be displayed in the view (as a list, and as markers on the map).
-	 * It is filtered by user text input. It's bound to the <ul> for places, and will update in real
+	 * It is filtered by user input. It's bound to the <ul> for places, and will update in real
 	 * time as the user changes the filter text in the <input>. */
 	self.filteredList = ko.computed(function(){
 
@@ -264,8 +275,9 @@ var ViewModel = function() {
 
 		// For each place in the places list
 		for (var i = 0; i < placesLength; i++) {
-			// If the place name (lower case) contains the filter text
-			if ( placesCopy[i].name.toLowerCase().includes(filterText) ) {
+			// If the place name (lower case) contains the filter text, and the rating is above the minimum
+			if ( placesCopy[i].name.toLowerCase().includes(filterText) &&  placesCopy[i].rating >= self.ratingNumber() ) {
+
 				// Add the corresponding map marker
 				placesCopy[i].marker.setMap(map);
 				// Add appropriate places to filtered list

@@ -26,12 +26,13 @@
             window.performance.mark('start_body');
         </script>
 
-
-        <!-- Places filter input -->
+        <!-- Places text filter input -->
         <p> Filter results: <input type="text" name="filter-input" data-bind="textInput: filterText"> </p>
 
-        <!-- For testing -->
-        <p data-bind="text: filterText"></p>
+        <!-- Places rating filter -->
+        <label id="rating-slider-label" data-bind="text: ratingText"></label>
+        <input id="rating-slider" type="range" min="1" max="5" step="1" data-bind="value: ratingNumber"></input>
+        <p data-bind="text: ratingText"></p>
 
         <!-- Places list -->
         <ul id="places-list" data-bind="foreach: filteredList">
