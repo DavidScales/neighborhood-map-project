@@ -25,7 +25,6 @@ var mapCenterStored = localStorage.getItem('mapCenter');
 if (mapCenterStored !== null) {
 	var mapCenter = JSON.parse(mapCenterStored);
 }
-
 // If no data was stored, set the map center to a default
 else {
 	var mapCenter = {
@@ -46,7 +45,6 @@ var yelpLocationStored = localStorage.getItem('yelpLocation');
 if (yelpLocationStored !== null) {
 	var yelpLocation = yelpLocationStored;
 }
-
 // If no data was stored, use a default search term
 else {
 	var yelpLocation = 'Belmont, California';
@@ -169,7 +167,7 @@ function getYelp() {
 }
 
 /* This callback recieves the Yelp data for the local restaurants, converts them into Place objects,
- * and stores them in an observable array. Also stores data as normal objects, for localStorage */
+ * and stores them in an observable array. Also stores data as normal objects, and updates localStorage */
 function yelpCallback(data) {
 
 	// Clear the Yelp error timeout, since we have recieved a response
@@ -226,8 +224,14 @@ function loadStoredData() {
  *******************************************************************************************/
 /* A Google Map is created, centered on our initial neighborhood, and put into the view.
  * This function is called as a callback to the Google Maps API request in index.html.
+ *
  * Additionally, if persistent Yelp data from a previous user visit exists, this function
- * will kick off the loading of that data (and the Yelp request will be skipped). */
+ * will kick off the loading of that data (and the Yelp request will be skipped).
+ *
+ * Finally, this function will establish Google Autocomplete functionality on a user
+ * text <input>, and enable said input to update the current location. This will
+ * re-center the map on the new location, request new Yelp data (updating the places model),
+ * and update localStorage appropriately. */
 
 // Initialize map
 var map;
@@ -247,10 +251,6 @@ function initMap() {
 		zoom: ZOOM
 	});
 
-	// User Timing API - for testing perf
-	window.performance.mark('initMap_done');
-	window.performance.measure('Load map', 'initMap_called', 'initMap_done');
-
 	/* Once maps has successfully loaded */
 
 	/* If places data exists from last user visit, simply load that data into places array */
@@ -259,6 +259,60 @@ function initMap() {
 		// Load from last visit into places array
 		loadStoredData();
 	}
+
+	// Set country restriction to US
+	var countryRestrict = {'country': 'us'};
+
+	// Initiated the Google Autocomplete object
+	var autocomplete = new google.maps.places.Autocomplete(
+
+		// Connect to UI text <input>
+		( document.getElementById('location-search-text-autocomplete') ), {
+	 		types: ['address'], // Only show addresses
+	 		componentRestrictions: countryRestrict // Restrict to United States
+		});
+
+	// Add listener for place selection
+	autocomplete.addListener('place_changed', onPlaceChange);
+
+	/* This function searches for places in a new location based on user <input>.
+	 * It is called when a place is selected from the autocomplete list.
+	 */
+	function onPlaceChange() {
+
+		// Store selected location
+		var location = autocomplete.getPlace();
+
+		// If results are valid
+		if (location.geometry && location.formatted_address) {
+
+			// For each existing place
+			for (var i = 0, total = places().length; i < total; i++) {
+
+				// Remove the corresponding map marker
+				places()[i].marker.setMap(null);
+			}
+
+			// Update the Yelp location to the user's <input>
+			yelpLocation = location.formatted_address;
+
+			// Begin a new Yelp request with the new location
+			getYelp();
+
+			// Update the map center
+			mapCenter = location.geometry.location;
+
+			// Update the map center in localStorage
+			localStorage.setItem('mapCenter', JSON.stringify(mapCenter) );
+
+			// Re-center the map
+			map.setCenter(mapCenter);
+		}
+	}
+
+	// User Timing API - for testing perf
+	window.performance.mark('initMap_done');
+	window.performance.measure('Load map', 'initMap_called', 'initMap_done');
 }
 
 /* Alert the user if Google Maps failed to load. This function is called if the Maps
@@ -342,58 +396,7 @@ var ViewModel = function() {
 	var self = this;
 
 	// A bound text <input> allows searching for new locations
-	self.searchText = ko.observable('');
-
-	/* This function searches for places in a new location based on bound user <input>.
-	 * It is executed on UI click.
-	 */
-	self.locationSearch = function() {
-
-		// For each existing place
-		for (var i = 0, total = places().length; i < total; i++) {
-
-			// Remove the corresponding map marker
-			places()[i].marker.setMap(null);
-		}
-
-		// Update the Yelp location to the user's bound <input>
-		yelpLocation = self.searchText();
-
-		// Begin a new Yelp request with the new location
-		getYelp();
-
-		/*
-		 * Translate the new Yelp location into map coordinates using Google geocoding
-		 */
-
-		// Prepare a geocode request
-		geocoder = new google.maps.Geocoder();
-		var geocodeRequest = {
-			'address': yelpLocation
-		};
-
-		// Send the request
-		geocoder.geocode( geocodeRequest, function(results, status) {
-
-			// If the request is successful
-			if (status == google.maps.GeocoderStatus.OK) {
-
-				// Update the map center
-				mapCenter = results[0].geometry.location;
-
-				// Update the map center in localStorage
-				localStorage.setItem('mapCenter', JSON.stringify(mapCenter) );
-
-				// Re-center the map
-				map.setCenter(mapCenter);
-			}
-
-			// If the request is unsuccessful, alert the user
-			else {
-				alert("Google could not fine that location :( Error: " + status);
-			}
-		});
-	}
+	// self.searchText = ko.observable('');
 
 	// Minimum star value for filtering by rating. This is bound to a slider <input>
 	self.ratingNumber = ko.observable(1);

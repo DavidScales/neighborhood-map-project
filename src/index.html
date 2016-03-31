@@ -29,9 +29,8 @@
         <!-- Places text filter input -->
         <p> Filter results: <input type="text" name="filter-input" data-bind="textInput: filterText"> </p>
 
-        <!-- Location search -->
-        <button id="location-search-button" data-bind="click: locationSearch">Search</button>
-        <input id="location-search-text" type="text" data-bind="value: searchText"></input>
+        <br>
+        <input id="location-search-text-autocomplete" type="text" placeholder="enter your address"></input>
 
         <!-- Places rating filter -->
         <label id="rating-slider-label" data-bind="text: ratingText"></label>
@@ -83,7 +82,7 @@
 
 
         <!-- Load Google Maps API  -->
-        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBUjsdD1ThEiL98_mDnT8sCPAu-ED0DeYg&callback=initMap" onerror="mapsError()" async></script>
+        <script src="https://maps.googleapis.com/maps/api/js?libraries=places&key=AIzaSyBUjsdD1ThEiL98_mDnT8sCPAu-ED0DeYg&callback=initMap" onerror="mapsError()" async></script>
 
     </body>
 </html>
