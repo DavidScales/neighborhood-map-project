@@ -26,28 +26,41 @@
             window.performance.mark('start_body');
         </script>
 
-        <!-- Places text filter input -->
-        <p> Filter results: <input type="text" name="filter-input" data-bind="textInput: filterText"> </p>
+        <!-- Sidebar. Off screen by default. "Opens" by changing CSS class, activated by bound UI events -->
+        <div class="sidebar" data-bind="css: {sidebar__open: sidebarVisible}">
 
-        <br>
-        <input id="location-search-text-autocomplete" type="text" placeholder="enter your address"></input>
 
-        <!-- Places rating filter -->
-        <label id="rating-slider-label" data-bind="text: ratingText"></label>
-        <input id="rating-slider" type="range" min="1" max="5" step="1" data-bind="value: ratingNumber"></input>
-        <p data-bind="text: ratingText"></p>
+            <div class="sidebar-content">
 
-        <!-- Places list -->
-        <ul id="places-list" data-bind="foreach: filteredList">
-            <li class="places-list-item">
-                <span data-bind="text: name"></span>
-                <button data-bind="click: $root.setActivePlace"> ACTIVATE </button>
-                <span data-bind="css: {active: $data == $root.activePlace() }"> active?</span>
-            </li>
-        </ul>
+                <!-- Places text filter input -->
+                <p> Filter results: <input type="text" name="filter-input" data-bind="textInput: filterText"> </p>
 
-        <!-- Google map  -->
-        <div id="map"></div>
+                <br>
+                <input id="location-search-text-autocomplete" type="text" placeholder="enter your address"></input>
+
+                <!-- Places rating filter -->
+                <label id="rating-slider-label" data-bind="text: ratingText"></label>
+                <input id="rating-slider" type="range" min="1" max="5" step="1" data-bind="value: ratingNumber"></input>
+                <p data-bind="text: ratingText"></p>
+
+                <!-- Places list -->
+                <ul id="places-list" data-bind="foreach: filteredList">
+                    <li class="places-list-item">
+                        <span data-bind="text: name"></span>
+                        <button data-bind="click: $root.setActivePlace"> ACTIVATE </button>
+                        <span data-bind="css: {active: $data == $root.activePlace() }"> active?</span>
+                    </li>
+                </ul>
+
+            </div>
+
+            <!-- Sidebar edge. Always visible. Opens full sidebar when moused over -->
+            <div class="sidebar-edge" data-bind="event: {mouseover: openSidebar}"></div>
+
+        </div>
+
+        <!-- Google map. Closes sidebar when moused over  -->
+        <div id="map" data-bind="event: {mouseover: closeSidebar}"></div>
 
         <!-- TESTING -->
         <script>

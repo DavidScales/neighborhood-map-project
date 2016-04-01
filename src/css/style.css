@@ -4,6 +4,9 @@ html, body {
 	padding: 0;
 }
 
+/*
+ * Active place/restaurant
+ */
 .active {
 	color: red;
 }
@@ -12,5 +15,71 @@ html, body {
  * Map
  */
 #map {
+	/* Full screen */
 	height: 100%;
+	width: 100%;
+	position: absolute;
+	top: 0;
+	left: 0;
+	/* Background */
+	z-index: 0;
 }
+
+/*
+ * Sidebar
+ */
+.sidebar {
+	z-index: 1;
+	position: fixed;
+	left:-300px;
+	top:0;
+	width: auto;
+	background: black;
+	height: 100%;
+	color: white;
+	display: flex; /*etc?*/
+}
+
+/*cursor: pointer;*/
+
+/*sidebar:hover*/
+
+.sidebar__open{
+	/*left:0;*/
+	opacity: .45;
+	transform: translateX(300px);
+}
+
+/* Smooth animation */
+.sidebar, .sidebar:after{
+	-webkit-transition: all 500ms ease;
+	-moz-transition: all 500ms ease;
+	-ms-transition: all 500ms ease;
+	-o-transition: all 500ms ease;
+	transition: all 500ms ease;
+}
+
+/* Create a CSS arrow */
+/*http://www.sitepoint.com/css3-sliding-menu/*/
+.sidebar:after
+{
+	position: absolute;
+	content: ' ';
+	width: 0;
+	height: 0;
+	top: 50%;
+	border-width: 30px 12px;
+	border-style: solid;
+	border-color: transparent transparent transparent black;
+}
+.sidebar-content {
+	width: 290px;
+	padding-left: 10px;
+}
+
+.sidebar-edge {
+	width: 30px;
+	padding: 10px;
+}
+
+

@@ -395,8 +395,20 @@ var ViewModel = function() {
 	// Store local scope
 	var self = this;
 
-	// A bound text <input> allows searching for new locations
-	// self.searchText = ko.observable('');
+	/* Open/closed status of the sidebar. This boolean is used in the HTML to determine what CSS
+	 * class to apply to the sidebar (an "open" class or "closed/default" class). Functions
+	 * are called to change the status of this boolean when a user hovers/clicks areas in the UI. */
+	self.sidebarVisible = ko.observable(false);
+
+	// Open the sidebar, changing its CSS class. Bound to UI.
+	self.openSidebar = function() {
+		self.sidebarVisible(true);
+	};
+
+	// Close the sidebar, changing its CSS class. Bound to UI.
+	self.closeSidebar = function() {
+		self.sidebarVisible(false);
+	};
 
 	// Minimum star value for filtering by rating. This is bound to a slider <input>
 	self.ratingNumber = ko.observable(1);
