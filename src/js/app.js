@@ -248,7 +248,8 @@ function initMap() {
 	// Create map in the #map div
 	map = new google.maps.Map(document.getElementById('map'), {
 		center: mapCenter,
-		zoom: ZOOM
+		zoom: ZOOM,
+		mapTypeControl: false
 	});
 
 	/* Once maps has successfully loaded */
