@@ -26,6 +26,9 @@
             window.performance.mark('start_body');
         </script>
 
+        <!-- Open button. Opens sidebar, and hides itself while sidebar is open -->
+        <button class="openbutton" data-bind="event: {click: openSidebar}, css: {openbutton__hidden: sidebarVisible}">More...</button>
+
         <!-- Sidebar. Off screen by default. "Opens" by changing CSS class, activated by bound UI events -->
         <div class="sidebar" data-bind="css: {sidebar__open: sidebarVisible}">
 
@@ -52,15 +55,18 @@
                     </li>
                 </ul>
 
+                <!-- Close button. Closes sidebar. -->
+                <button class="closebutton" data-bind="event: {click: closeSidebar}">Close</button>
+
             </div>
 
-            <!-- Sidebar edge. Always visible. Opens full sidebar when moused over -->
+            <!-- Sidebar edge. Always visible. Opens full sidebar when moused over, toggles if clicked -->
             <div class="sidebar-edge" data-bind="event: {mouseover: openSidebar}"></div>
 
         </div>
 
         <!-- Google map. Closes sidebar when moused over  -->
-        <div id="map" data-bind="event: {mouseover: closeSidebar}"></div>
+        <div id="map" data-bind="event: {mouseover: closeSidebar, click: closeSidebar}"></div>
 
         <!-- TESTING -->
         <script>

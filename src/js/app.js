@@ -368,17 +368,20 @@ var Place = function(placeData) {
 	});
 
 	// Build HTML content for an info window
-	this.infoWindowContent = '<h1>'+self.name+'</h1>'+
+	this.infoWindowContent = '<div class="infowindow">'+
+							 '<h1>'+self.name+'</h1>'+
 							 '<h2>'+self.address+'</h2>'+
 							 '<h2>'+self.phoneNumber+'</h2>'+
 						     '<img src="'+self.image+'" alt="yelp image">'+
 						     '<img src="'+self.ratingImage+'" alt="yelp rating">'+
 						     '<p>'+self.reviewCount+'</p>'+
-						     '<p>'+self.snippetText+'</p>';
+						     '<p>'+self.snippetText+'</p>'+
+						     '</div>';
 
 	// Establish an info window (not yet displayed)
 	self.infoWindow = new google.maps.InfoWindow({
-		content: self.infoWindowContent
+		content: self.infoWindowContent,
+		maxWidth: 250 // Restrict maximum width, looks better
 	});
 };
 
@@ -492,6 +495,12 @@ var ViewModel = function() {
 
 		// Open info window
 		self.activePlace().infoWindow.open(map, self.activePlace().marker);
+
+		// Shift map to compensate for Google's silly Info Window placement. Slightly hacky.
+		setTimeout(function(){
+			map.panBy(-20,0);
+		}, 500);
+
 	};
 };
 
