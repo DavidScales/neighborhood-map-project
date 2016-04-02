@@ -404,9 +404,18 @@ var ViewModel = function() {
 	 * are called to change the status of this boolean when a user hovers/clicks areas in the UI. */
 	self.sidebarVisible = ko.observable(false);
 
-	// Open the sidebar, changing its CSS class. Bound to UI.
+	// Open the sidebar, changing its CSS class. Bound to UI. Also close current info window.
 	self.openSidebar = function() {
+
+		// Open sidebar
 		self.sidebarVisible(true);
+
+		// If the active place has been initialized
+		if (self.activePlace() !== 'uninitialized') {
+
+			// Close the current active place's info window
+			self.activePlace().infoWindow.close();
+		}
 	};
 
 	// Close the sidebar, changing its CSS class. Bound to UI.

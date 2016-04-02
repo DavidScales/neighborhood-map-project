@@ -4,6 +4,10 @@ html, body {
 	padding: 0;
 }
 
+img {
+	max-width: 100%;
+}
+
 /*
  * Active place/restaurant
  */
@@ -68,7 +72,7 @@ html, body {
 /*Translate to open*/
 .sidebar__open {
 	/*left:0;*/
-	opacity: .45;
+	opacity: ..8;
 	transform: translateX(300px);
 }
 
