@@ -339,7 +339,8 @@ var Place = function(placeData) {
 	// These values are extracted from the initial Yelp request
 	this.name = placeData.name; // Name
 	this.address = placeData.location.display_address[0]; // Address
-	this.phoneNumber = placeData.display_phone; // Phone number
+	this.autoPhoneNumber = "tel:" + placeData.display_phone; // Formatted phone number for autodialing
+	this.phoneNumber = "("+placeData.phone.slice(0,3)+")"+placeData.phone.slice(3,6)+"-"+placeData.phone.slice(6); // Formatted phone number for displaying
 	this.rating = placeData.rating; // Yelp rating, numeric
 	this.ratingImage = placeData.rating_img_url; // Yelp rating, graphic
 	this.reviewCount = placeData.review_count; // Number of Yelp reviews
@@ -371,7 +372,7 @@ var Place = function(placeData) {
 	this.infoWindowContent = '<div class="infowindow">'+
 							 '<h1>'+self.name+'</h1>'+
 							 '<h2>'+self.address+'</h2>'+
-							 '<h2>'+self.phoneNumber+'</h2>'+
+							 '<a href="'+self.autoPhoneNumber+'">'+self.phoneNumber+'</a>'+
 						     '<img src="'+self.image+'" alt="yelp image">'+
 						     '<img src="'+self.ratingImage+'" alt="yelp rating">'+
 						     '<p>'+self.reviewCount+'</p>'+
@@ -423,16 +424,8 @@ var ViewModel = function() {
 		self.sidebarVisible(false);
 	};
 
-	// Minimum star value for filtering by rating. This is bound to a slider <input>
-	self.ratingNumber = ko.observable(1);
-
-	// Store text descriptions of minimum star value
-	self.ratingValues = ['One star and up', 'Two star and up', 'Three star and up', 'Four star and up', 'Five star only'];
-
-	// Compute the current text description based on the current minimum star value. Bound to UI.
-	self.ratingText = ko.computed(function(){
-		return self.ratingValues[self.ratingNumber() - 1];
-	});
+	// Minimum star value for filtering by rating. This is bound to a slider <input> & <span>
+	self.ratingNumber = ko.observable(0);
 
 	// A bound text <input> allows filtering of places by name.
 	self.filterText = ko.observable('');
@@ -506,9 +499,9 @@ var ViewModel = function() {
 		self.activePlace().infoWindow.open(map, self.activePlace().marker);
 
 		// Shift map to compensate for Google's silly Info Window placement. Slightly hacky.
-		setTimeout(function(){
-			map.panBy(-20,0);
-		}, 500);
+		// setTimeout(function(){
+		// 	map.panBy(-20,0);
+		// }, 500);
 
 	};
 };

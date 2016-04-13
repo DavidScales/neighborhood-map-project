@@ -17,6 +17,9 @@
         <!-- Set title -->
         <title>Neighborhood Restaurants</title>
 
+        <!-- Google font TODO -->
+        <link href='https://fonts.googleapis.com/css?family=Roboto:400,500,900,700' rel='stylesheet' type='text/css'>
+
     </head>
 
     <body>
@@ -29,29 +32,40 @@
         <!-- Open button. Opens sidebar, and hides itself while sidebar is open -->
         <button class="openbutton" data-bind="event: {click: openSidebar}, css: {openbutton__hidden: sidebarVisible}">More...</button>
 
+        <!-- New location search -->
+        <div class="location" data-bind="css:{location__hidden: sidebarVisible}">
+            <input id="location-search-text-autocomplete" type="text" placeholder="Enter your address"></input>
+        </div>
+
         <!-- Sidebar. Off screen by default. "Opens" by changing CSS class, activated by bound UI events -->
         <div class="sidebar" data-bind="css: {sidebar__open: sidebarVisible}">
 
-
             <div class="sidebar-content">
 
-                <!-- Places text filter input -->
-                <p> Filter results: <input type="text" name="filter-input" data-bind="textInput: filterText"> </p>
+                <!-- Places filter -->
+                <div class="filter">
 
-                <br>
-                <input id="location-search-text-autocomplete" type="text" placeholder="enter your address"></input>
+                    <!-- text filter -->
+                    <div class="filter-text">
+                        <label id="filter-text-label" for="filter-input">Filter by name:</label>
+                        <input id ="filter-text-input" type="text" name="filter-input" data-bind="textInput: filterText">
+                    </div>
+                    <!-- <br> -->
 
-                <!-- Places rating filter -->
-                <label id="rating-slider-label" data-bind="text: ratingText"></label>
-                <input id="rating-slider" type="range" min="1" max="5" step="1" data-bind="value: ratingNumber"></input>
-                <p data-bind="text: ratingText"></p>
+                    <!-- rating filter -->
+                    <div class="filter-rating">
+                        <label for="rating-slider">Minimum rating:</label>
+                        <input id="rating-slider" type="range" min="0" max="5" step="0.5" data-bind="value: ratingNumber"></input>
+                        <span id="rating-slider-label" data-bind="text: ratingNumber"></span>
+                    </div>
+
+                </div>
 
                 <!-- Places list -->
                 <ul id="places-list" data-bind="foreach: filteredList">
-                    <li class="places-list-item">
-                        <span data-bind="text: name"></span>
-                        <button data-bind="click: function() { $root.setActivePlace($data); $root.closeSidebar(); }"> ACTIVATE </button>
-                        <span data-bind="css: {active: $data == $root.activePlace() }"> active?</span>
+                    <li class="places-list-item" data-bind="click: function() { $root.setActivePlace($data); $root.closeSidebar(); }, css: {active: $data == $root.activePlace() }">
+                        <div class="places-list-item-name" data-bind="text: name"></div>
+                        <div class="places-list-item-address" data-bind="text: address"></div>
                     </li>
                 </ul>
 
