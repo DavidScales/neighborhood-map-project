@@ -140,6 +140,7 @@ img {
 	font-size: 1.3em;
     border: solid 1px #707070;
     box-shadow: 0 0 5px 1px #969696;
+    width: 95%;
 }
 
 /*Places list*/
@@ -241,6 +242,53 @@ img {
  * InfoWindows
  */
 .infowindow {
- color:red;
+ display: flex; /*etc.*/
+ flex-wrap: wrap; /*etc.*/
 }
+
+.infowindow-image {
+	width:100px;
+	height: 100px;
+}
+
+.infowindow-details {
+	width: 150px;
+	height: 100px;
+	text-align: center;
+}
+
+.infowindow-details h2 {
+	margin: 0;
+}
+
+.infowindow-details h3 {
+	margin-top: 5px;
+	margin-bottom: 5px;
+}
+
+.infowindow-details a {
+	color: black;
+    text-decoration: none;
+}
+
+.infowindow-snippet {
+	margin-bottom: 0;
+}
+
+.infowindow-details-ratings {
+	padding-top: 5px;
+}
+
+.infowindow-details-ratings span {
+	vertical-align: top;
+}
+
+
+
+
+
+
+
+
+
 

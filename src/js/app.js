@@ -370,14 +370,30 @@ var Place = function(placeData) {
 
 	// Build HTML content for an info window
 	this.infoWindowContent = '<div class="infowindow">'+
-							 '<h1>'+self.name+'</h1>'+
-							 '<h2>'+self.address+'</h2>'+
-							 '<a href="'+self.autoPhoneNumber+'">'+self.phoneNumber+'</a>'+
-						     '<img src="'+self.image+'" alt="yelp image">'+
-						     '<img src="'+self.ratingImage+'" alt="yelp rating">'+
-						     '<p>'+self.reviewCount+'</p>'+
-						     '<p>'+self.snippetText+'</p>'+
-						     '</div>';
+							 	 '<img class="infowindow-image" alt="food image" src="'+self.image+'">'+
+								 '<div class="infowindow-details">'+
+									 '<h2>'+self.name+'</h2>'+
+									 '<h3>'+self.address+'</h3>'+
+		                        	 '<a href="'+self.autoPhoneNumber+'">'+self.phoneNumber+'</a>'+
+		                        	 '<div class="infowindow-details-ratings">'+
+			                        	 '<img src="'+self.ratingImage+'" alt="yelp rating">'+
+			                        	 '<span>('+self.reviewCount+')</span>'+
+		                        	 '</div>'+
+	                        	 '</div>'+
+	                        	 '<p class="infowindow-snippet">'+self.snippetText+'</p>'+
+                        	 '</div>';
+
+
+
+							 // '<div class="infowindow">'+
+							 // '<h1>'+self.name+'</h1>'+
+							 // '<h2>'+self.address+'</h2>'+
+							 // '<a href="'+self.autoPhoneNumber+'">'+self.phoneNumber+'</a>'+
+						  //    '<img src="'+self.image+'" alt="yelp image">'+
+						  //    '<img src="'+self.ratingImage+'" alt="yelp rating">'+
+						  //    '<p>'+self.reviewCount+'</p>'+
+						  //    '<p>'+self.snippetText+'</p>'+
+						  //    '</div>';
 
 	// Establish an info window (not yet displayed)
 	self.infoWindow = new google.maps.InfoWindow({
