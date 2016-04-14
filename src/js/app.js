@@ -13,55 +13,41 @@ var ZOOM = 13;
 // The search radius, in meters
 var RADIUS = 5000;
 
-
 /*
- * Yelp data
+ * Check for existing places data in local storage, use if present, otherwise request new data.
  */
 
-// Check localStorage for data from previous user visit
+// Retrieve local storage data
 var placesStoredString = localStorage.getItem('placesStored');
-
-// If data is absent, request new Yelp data
-if (placesStoredString === null) {
-
-	// Begin Yelp request
-	getYelp();
-}
-
-/*
- * Geographic coordinates that will be used to define our map's initial center
- */
-
-// Check localStorage for data from previous user visit
 var mapCenterStored = localStorage.getItem('mapCenter');
+var yelpLocationStored = localStorage.getItem('yelpLocation');
 
-// If data was stored, set the map center to the existing map canter
-if (mapCenterStored !== null) {
+var yelpLocation;
+
+// If data is present
+if (placesStoredString !== null && mapCenterStored !== null && yelpLocationStored !== null) {
+
+	// Load existing map center
 	var mapCenter = JSON.parse(mapCenterStored);
+
+	// Load existing Yelp location
+	yelpLocation = yelpLocationStored;
 }
-// If no data was stored, set the map center to a default
+
+// If data is absent
 else {
+
+	// Set default Yelp location
+	yelpLocation = 'Belmont, California';
+
+	// Set default map center
 	var mapCenter = {
 		'lat': 37.5181,
 		'lng': -122.2917
 	};
-}
 
-
-/*
- * Search term used for Yelp requests
- */
-
-// Check localStorage for data from previous user visit
-var yelpLocationStored = localStorage.getItem('yelpLocation');
-
-// If data was stored, use the existing search term
-if (yelpLocationStored !== null) {
-	var yelpLocation = yelpLocationStored;
-}
-// If no data was stored, use a default search term
-else {
-	var yelpLocation = 'Belmont, California';
+	// Begin Yelp request
+	getYelp();
 }
 
 /*******************************************************************************************
@@ -266,7 +252,7 @@ function initMap() {
 	var autocomplete = new google.maps.places.Autocomplete(
 
 		// Connect to UI text <input>
-		( document.getElementById('location-search-text-autocomplete') ), {
+		/** @type {!HTMLInputElement} */( document.getElementById('location-input') ), {
 	 		types: ['address'], // Only show addresses
 	 		componentRestrictions: countryRestrict // Restrict to United States
 		});
