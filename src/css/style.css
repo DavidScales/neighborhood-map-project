@@ -194,9 +194,69 @@ img {
     font-size: 1em;
 }
 
-/*Filter rating slider*/
+/*Filter rating area*/
 .sidebar-content-filter-rating {
 	padding-top: 10px;
+}
+
+/*Slider*/
+#rating-slider-input {
+	margin: 0;
+	padding: 0;
+	width: 80%;
+	-webkit-appearance: none;
+}
+
+/*Slider - remove default focus outline*/
+#rating-slider-input:focus {
+  outline: none;
+}
+
+/*Slider - Track, Webkit*/
+#rating-slider-input::-webkit-slider-runnable-track {
+  width: 80%;
+  height: 4px;
+  cursor: pointer;
+  background: #3071a9;
+  border: 0.2px solid #010101;
+}
+
+/*Slider - Track, Moz*/
+#rating-slider-input::-moz-range-track {
+  width: 80%;
+  height: 4px;
+  cursor: pointer;
+  background: #3071a9;
+  border: 0.2px solid #010101;
+}
+
+/*Slider - Thumb, Webkit*/
+#rating-slider-input::-webkit-slider-thumb {
+  box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+  border: 1px solid #000000;
+  height: 16px;
+  width: 32px;
+  border-radius: 3px;
+  background: #ffffff;
+  cursor: pointer;
+  -webkit-appearance: none;
+  margin-top: -8px;
+}
+
+/*Slider - Thumb, Moz*/
+#rating-slider-input::-moz-range-thumb {
+  box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+  border: 1px solid #000000;
+  height: 16px;
+  width: 32px;
+  border-radius: 3px;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+/*Slider "label"*/
+#rating-slider-label {
+	margin:0;
 }
 
 /*Places list*/
@@ -275,7 +335,7 @@ img {
 	}
 
 	/*Hide close button*/
-	.closebutton{
+	.sidebar-content-closebutton{
 		display: none;
 	}
 

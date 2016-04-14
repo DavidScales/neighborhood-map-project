@@ -1,7 +1,10 @@
 /* app.js */
 
 /*
- * TODO
+ * 1. Check for existing data in localStorage, if available skip Yelp request
+ * 2. Request Yelp data from API, collecting data on restaurants in a neighborhood.
+ *	  This data is stored locally, and used to populate a list and Google Map info windows.
+ * 3.
  */
 
 /*******************************************************************************************
@@ -53,6 +56,11 @@ else {
 /*******************************************************************************************
  * Yelp requests
  *******************************************************************************************/
+/*
+ * Sends a Yelp request for information on restaurants in a neighborhood. Updates local
+ * storage with this information. Converts each restaurant object into a Place object,
+ * and stores them in a an observable array, which is tied to the View.
+ */
 
 // Holder for storing Yelp data in localStorage
 var placesStorage;
@@ -189,7 +197,7 @@ function yelpCallback(data) {
  * This is used in lieu of an unnecessary Yelp request */
 function loadStoredData() {
 
-	console.log('loading stored data into places');
+	console.log('Loading stored data into places...');
 
 	// Convert places data string into JSON object
 	storedPlaces = JSON.parse(placesStoredString);
@@ -220,7 +228,6 @@ function loadStoredData() {
 // Initialize map
 var map;
 var service;
-var geocoder; // Used later for converting locations to coordinates
 
 // initMap called by Google Maps API callback
 function initMap() {
@@ -248,7 +255,7 @@ function initMap() {
 	// Set country restriction to US
 	var countryRestrict = {'country': 'us'};
 
-	// Initiated the Google Autocomplete object
+	// Initiate the Google Autocomplete object
 	var autocomplete = new google.maps.places.Autocomplete(
 
 		// Connect to UI text <input>
@@ -305,7 +312,7 @@ function initMap() {
 function mapsError() {
 	alert("It looks like Google Maps isn't working :( Try refreshing the page."+
 		  " If that doesn't work, consider going outside :D");
-	// document.location.href = 'http://www.mozilla.org' // Relocate to apology page
+	// document.location.href = 'http://www.mozilla.org' // Optionally: relocate to apology page
 }
 
 /*******************************************************************************************
@@ -413,7 +420,7 @@ var ViewModel = function() {
 		self.sidebarVisible(false);
 	};
 
-	// Minimum star value for filtering by rating. This is bound to a slider <input> & <span>
+	// Minimum star value for filtering by rating. This is bound to a slider <input>
 	self.ratingNumber = ko.observable(0);
 
 	// A bound text <input> allows filtering of places by name.
@@ -428,8 +435,7 @@ var ViewModel = function() {
 		var filterText = self.filterText().toLowerCase(); // Filter text, lower cased
 		var placesCopy = places().slice(); // Store a shallow copy of places
 		var placesLength = placesCopy.length; // Places list length, for loop
-		// Store filtered places
-		var filteredList = [];
+		var filteredList = []; // Store filtered places
 
 		// For each place in the places list
 		for (var i = 0; i < placesLength; i++) {
@@ -469,7 +475,6 @@ var ViewModel = function() {
 
 			// Reset the current active place's map marker
 			self.activePlace().marker.setIcon('images/map-marker.png');
-			// null
 
 			// Close the current active place's info window
 			self.activePlace().infoWindow.close();
@@ -480,7 +485,6 @@ var ViewModel = function() {
 
 		// Set new marker icon, which is distinct from the rest
 		self.activePlace().marker.setIcon('images/map-marker-active.png');
-		// http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|00BCD4
 
 		// Create a bounce animation for the active place
 		self.activePlace().marker.setAnimation(google.maps.Animation.BOUNCE); // Begin bouncing
@@ -488,12 +492,6 @@ var ViewModel = function() {
 
 		// Open info window
 		self.activePlace().infoWindow.open(map, self.activePlace().marker);
-
-		// Shift map to compensate for Google's silly Info Window placement. Slightly hacky.
-		// setTimeout(function(){
-		// 	map.panBy(-20,0);
-		// }, 500);
-
 	};
 };
 
