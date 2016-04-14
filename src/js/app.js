@@ -357,6 +357,7 @@ var Place = function(placeData) {
 			lng: self.lng
 		},
 		map: map,
+		icon: 'images/map-marker.png', // Custom icon
 		title: self.name, // Set title to place name
 		animation: google.maps.Animation.DROP // Add drop animation for marker initialization
 	});
@@ -382,18 +383,6 @@ var Place = function(placeData) {
 	                        	 '</div>'+
 	                        	 '<p class="infowindow-snippet">'+self.snippetText+'</p>'+
                         	 '</div>';
-
-
-
-							 // '<div class="infowindow">'+
-							 // '<h1>'+self.name+'</h1>'+
-							 // '<h2>'+self.address+'</h2>'+
-							 // '<a href="'+self.autoPhoneNumber+'">'+self.phoneNumber+'</a>'+
-						  //    '<img src="'+self.image+'" alt="yelp image">'+
-						  //    '<img src="'+self.ratingImage+'" alt="yelp rating">'+
-						  //    '<p>'+self.reviewCount+'</p>'+
-						  //    '<p>'+self.snippetText+'</p>'+
-						  //    '</div>';
 
 	// Establish an info window (not yet displayed)
 	self.infoWindow = new google.maps.InfoWindow({
@@ -495,7 +484,8 @@ var ViewModel = function() {
 		if (self.activePlace() !== 'uninitialized') {
 
 			// Reset the current active place's map marker
-			self.activePlace().marker.setIcon(null);
+			self.activePlace().marker.setIcon('images/map-marker.png');
+			// null
 
 			// Close the current active place's info window
 			self.activePlace().infoWindow.close();
@@ -505,11 +495,12 @@ var ViewModel = function() {
 		self.activePlace(clickedPlace);
 
 		// Set new marker icon, which is distinct from the rest
-		self.activePlace().marker.setIcon('http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|00BCD4');
+		self.activePlace().marker.setIcon('images/map-marker-active.png');
+		// http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|00BCD4
 
 		// Create a bounce animation for the active place
 		self.activePlace().marker.setAnimation(google.maps.Animation.BOUNCE); // Begin bouncing
-		setTimeout( function(){clickedPlace.marker.setAnimation(null);}, 1400 ); // Stop after 2 bounces (700ms each)
+		setTimeout( function(){clickedPlace.marker.setAnimation(null);}, 1400 ); // Stop after 2 bounces (~700ms each)
 
 		// Open info window
 		self.activePlace().infoWindow.open(map, self.activePlace().marker);

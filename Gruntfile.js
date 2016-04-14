@@ -1,36 +1,13 @@
 /*
   1. Inline css (minify too) and js (don't minify yet).
   2. Minify html and inlined js.
-  3. Optimize images.
+  3. Copy images from src to dist.
+  4. Optimize images.
 */
 
 module.exports = function(grunt) {
 
   grunt.initConfig({
-
-    /* Minify css files.
-    https://github.com/gruntjs/grunt-contrib-cssmin */
-    // cssmin: {
-    //   target: {
-    //     files: [{
-    //       expand: true,
-    //       cwd: 'src/css',
-    //       src: ['style.css'],
-    //       dest: 'dist/css',
-    //       ext: '.css'
-    //     }]
-    //   }
-    // },
-
-    /* Uglify js
-    https://github.com/gruntjs/grunt-contrib-uglify */
-    // uglify: {
-    //   my_target: {
-    //     files: {
-    //       'dist/js/app.js': ['src/js/app.js'], // dest : src
-    //     }
-    //   }
-    // },
 
     /*  Minify and internalize css and js files.
      *
@@ -66,6 +43,18 @@ module.exports = function(grunt) {
       }
     },
 
+    /* Copy images from src to dist */
+    copy: {
+      dev: {
+        files: [{
+          expand: true,
+          src: '*.{gif,jpg,png}',
+          cwd: 'src/images/',
+          dest: 'dist/images/'
+        }]
+      },
+    },
+
     /* Optimize images with ImageOptim
     Run after responsive_images for further optimizations.
     Leave jPeg mini false, its not installed (its $20!).
@@ -88,5 +77,5 @@ module.exports = function(grunt) {
   // replaces grunt.loadNpmTask('grunt-...'); lines for each plugin
   require('load-grunt-tasks')(grunt);
 
-  grunt.registerTask('default', [/*'cssmin', 'uglify',*/ 'inline', 'htmlmin', 'imageoptim']);
+  grunt.registerTask('default', ['inline', 'htmlmin', 'copy', 'imageoptim']);
 };
