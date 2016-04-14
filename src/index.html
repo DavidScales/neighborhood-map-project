@@ -20,9 +20,9 @@
     </head>
 
     <body>
+
         <!-- TESTING -->
         <script>
-            // User Timing API - for testing perf
             window.performance.mark('start_body');
         </script>
 
@@ -31,7 +31,7 @@
 
         <!-- New location search -->
         <div class="location" data-bind="css:{location__hidden: sidebarVisible}">
-            <input id="location-search-text-autocomplete" type="text" placeholder="Enter your address"></input>
+            <input id="location-input" type="text" placeholder="Enter your address"></input>
         </div>
 
         <!-- Sidebar. Off screen by default. "Opens" by changing CSS class, activated by bound UI events -->
@@ -40,62 +40,37 @@
             <div class="sidebar-content">
 
                 <!-- Places filter -->
-                <div class="filter">
+                <div class="sidebar-content-filter">
 
-                    <!-- text filter -->
-                    <div class="filter-text">
-                        <label id="filter-text-label" for="filter-input">Filter by name:</label>
-                        <input id ="filter-text-input" type="text" name="filter-input" data-bind="textInput: filterText">
+                    <!-- Text filter - filters places by user text input -->
+                    <div class="sidebar-content-filter-text">
+                        <label id="filter-text-label" for="filter-text-input">Filter by name:</label>
+                        <input id ="filter-text-input" type="text" name="filter-text-input" data-bind="textInput: filterText">
                     </div>
-                    <!-- <br> -->
 
-                    <!-- rating filter -->
-                    <div class="filter-rating">
-                        <label for="rating-slider">Minimum rating:</label>
-                        <input id="rating-slider" type="range" min="0" max="5" step="0.5" data-bind="value: ratingNumber"></input>
+                    <!-- Rating filter - filters places by user slider input -->
+                    <div class="sidebar-content-filter-rating">
+                        <label for="rating-slider-input">Minimum rating:</label>
+                        <input id="rating-slider-input" type="range" min="0" max="5" step="0.5" data-bind="value: ratingNumber"></input>
                         <span id="rating-slider-label" data-bind="text: ratingNumber"></span>
                     </div>
 
                 </div>
 
-
-
-
-
-                <!-- <div class="infowindow">
-
-                    <img class="infowindow-image">
-
-                    <div class="infowindow-details">
-                        <h2>Title</h2>
-                        <h3>Address</h3>
-                        <h3>Phone</h3>
-                        <img src="yelp...">
-                        <span>review count</span>
-                    </div>
-
-                    <div class="infowindow-snippet">snippet</div>
-
-                </div> -->
-
-
-
-
-
                 <!-- Places list -->
-                <ul id="places-list" data-bind="foreach: filteredList">
-                    <li class="places-list-item" data-bind="click: function() { $root.setActivePlace($data); $root.closeSidebar(); }, css: {active: $data == $root.activePlace() }">
-                        <div class="places-list-item-name" data-bind="text: name"></div>
-                        <div class="places-list-item-address" data-bind="text: address"></div>
+                <ul class="sidebar-content-places" data-bind="foreach: filteredList">
+                    <li class="sidebar-content-places-item" data-bind="click: function() { $root.setActivePlace($data); $root.closeSidebar(); }, css: {active: $data == $root.activePlace() }">
+                        <div class="sidebar-content-places-item-name" data-bind="text: name"></div>
+                        <div class="sidebar-content-places-item-address" data-bind="text: address"></div>
                     </li>
                 </ul>
 
                 <!-- Close button. Closes sidebar. -->
-                <button class="button closebutton" data-bind="event: {click: closeSidebar}">Close</button>
+                <button class="button sidebar-content-closebutton" data-bind="event: {click: closeSidebar}">Close</button>
 
             </div>
 
-            <!-- Sidebar edge. Always visible. Opens full sidebar when moused over, toggles if clicked -->
+            <!-- Sidebar edge. Opens full sidebar when moused over -->
             <div class="sidebar-edge" data-bind="event: {mouseover: openSidebar}"></div>
 
         </div>
@@ -105,11 +80,9 @@
 
         <!-- TESTING -->
         <script>
-            // User Timing API - for testing perf
             window.performance.mark('start_libraries');
             window.performance.measure('Load HTML', 'start_body', 'start_libraries');
         </script>
-
 
         <!-- Load libraries -->
         <script src="js/lib/jquery-1.12.2.min.js?__inline=true"></script>
@@ -118,25 +91,22 @@
 
         <!-- TESTING -->
         <script>
-            // User Timing API - for testing perf
             window.performance.mark('start_app');
             window.performance.measure('Load libraries', 'start_libraries', 'start_app');
         </script>
-
 
         <!-- Load and run main js file -->
         <script src="js/app.js?__inline=true"></script>
 
         <!-- TESTING -->
         <script>
-            // User Timing API - for testing perf
             window.performance.mark('maps_request');
             window.performance.measure('Load app', 'start_app', 'maps_request');
         </script>
 
-
         <!-- Load Google Maps API  -->
-        <script src="https://maps.googleapis.com/maps/api/js?libraries=places&key=AIzaSyBUjsdD1ThEiL98_mDnT8sCPAu-ED0DeYg&callback=initMap" onerror="mapsError()" async></script>
+        <script src="https://maps.googleapis.com/maps/api/js?libraries=places&key=AIzaSyBUjsdD1ThEiL98_mDnT8sCPAu-ED0DeYg&callback=initMap" onerror="mapsError()" async>
+        </script>
 
     </body>
 </html>

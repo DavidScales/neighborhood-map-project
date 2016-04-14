@@ -60,13 +60,6 @@ img {
 }
 
 /*
- * Active place/restaurant <li>
- */
-.active {
-	border: 2px solid white;
-}
-
-/*
  * Map
  */
 #map {
@@ -80,7 +73,22 @@ img {
 	z-index: 0;
 }
 
-/* Factor our button properties*/
+/*
+ * Smooth all animations
+ */
+.sidebar, .sidebar:after, .location, .openbutton {
+	-webkit-transition: all 500ms ease;
+	-moz-transition: all 500ms ease;
+	-ms-transition: all 500ms ease;
+	-o-transition: all 500ms ease;
+	transition: all 500ms ease;
+}
+
+/*
+ * Buttons
+ */
+
+/* Factor out common button properties*/
 .button {
 	z-index: 2;
     font-size: 1em;
@@ -93,26 +101,53 @@ img {
     margin-top: 10px;
 }
 
-/*
- * Open button
- */
- .openbutton {
+/*Open button - visible */
+.openbutton {
  	position: fixed;
 	bottom: 15px;
     left: 15px;
  }
 
- .openbutton__hidden {
- 	/*z-index: -1;*/
+/*Open button - hidden*/
+.openbutton__hidden {
  	opacity: 0;
  	visibility: hidden;
  }
+
+ /*
+  * Location Search bar
+  */
+
+/*Default view - visible*/
+.location {
+	z-index: 1;
+	position: fixed;
+	top: 10px;
+	width: 80%;
+	left: 10%;
+	text-align: center;
+	padding-top: 5px;
+}
+
+/*Hidden*/
+.location__hidden {
+	visibility: hidden;
+	opacity: 0;
+}
+
+/*Text input*/
+#location-input {
+	font-size: 1.3em;
+    border: solid 1px #707070;
+    box-shadow: 0 0 5px 1px #969696;
+    width: 95%;
+}
 
 /*
  * Sidebar
  */
 
-/*Off screen by default*/
+/*Default - offscreen*/
 .sidebar {
 	padding-right: 5px;
 	z-index: 1;
@@ -124,73 +159,48 @@ img {
 	background: black;
 	height: 100%;
 	color: white;
-	display: flex; /*etc?*/
-    overflow-y: scroll;
-    overflow: -x: hidden;
-
-    /*font-family: 'Roboto', sans-serif;*/
+	overflow-y: scroll;
+    overflow-x: hidden;
+	display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -moz-flex;
+    display: -webkit-flex;
+    display: flex;
 }
 
 /*Translate to open*/
 .sidebar__open {
-	/*left:0;*/
-	/*opacity: .8;*/
+	-moz-transform: translateX(300px);
+	-ms-transform: translateX(300px);
+	-webkit-transform: translateX(300px);
 	transform: translateX(300px);
-}
-
-/* Smooth animations */
-.sidebar, .sidebar:after, .location, .openbutton {
-	-webkit-transition: all 500ms ease;
-	-moz-transition: all 500ms ease;
-	-ms-transition: all 500ms ease;
-	-o-transition: all 500ms ease;
-	transition: all 500ms ease;
 }
 
 /*Content*/
 .sidebar-content {
 	width: 290px;
-	/*padding-left: 10px;*/
 }
 
-.location {
-	z-index: 1;
-	position: fixed;
-	top: 10px;
-	width: 80%;
-	left: 10%;
-	text-align: center;
-	padding-top: 5px;
-}
-
-.location__hidden {
-	visibility: hidden;
-	opacity: 0;
-}
-
-.filter {
+/*Filter section*/
+.sidebar-content-filter {
     padding-top: 16px;
     text-align: center;
 }
 
-.filter-rating {
-	padding-top: 10px;
-}
-
+/*Filter text input*/
 #filter-text-input {
     width: 90%;
     font-size: 1em;
 }
 
-#location-search-text-autocomplete {
-	font-size: 1.3em;
-    border: solid 1px #707070;
-    box-shadow: 0 0 5px 1px #969696;
-    width: 95%;
+/*Filter rating slider*/
+.sidebar-content-filter-rating {
+	padding-top: 10px;
 }
 
 /*Places list*/
-#places-list {
+.sidebar-content-places {
 	list-style-type: none;
 	overflow-x: auto;
 	padding-left: 5px;
@@ -199,44 +209,39 @@ img {
 }
 
 /*Places list items*/
-.places-list-item {
+.sidebar-content-places-item {
 	padding: 15px;
 	cursor: pointer;
 }
 
-/*Name/Title*/
-.places-list-item-name {
-	font-size: 1.3em;
-    font-weight: bold;
-}
-
-/*Address*/
-.places-list-item-address {
-
-}
-
-/*Rating image*/
-#places-list-item-phone {
-
-}
-
 /*highlight on hover*/
-.places-list-item:hover {
+.sidebar-content-places-item:hover {
 	color:black;
 	background: white;
 }
 
-/*Sidebar "edge"; hidden completely on mobile. */
-.sidebar-edge {
-	display: none;
+/*Active place <li>*/
+.active {
+	border: 2px solid white;
+}
+
+/*Name/Title*/
+.sidebar-content-places-item-name {
+	font-size: 1.3em;
+    font-weight: bold;
 }
 
 /*Close button*/
- .closebutton {
+.sidebar-content-closebutton {
  	position: relative;
     bottom: 15px;
     left: 15px;
- }
+}
+
+/*Sidebar "edge" - hidden completely on mobile. */
+.sidebar-edge {
+	display: none;
+}
 
 /*If not mobile*/
 @media screen and (min-width: 500px) {
@@ -264,10 +269,6 @@ img {
 		border-color: transparent transparent transparent white;
 	}
 
-	.sidebar__open:after {
-		opacity: 0;
-	}
-
 	/*Hide open button*/
 	.openbutton {
 		display: none;
@@ -289,44 +290,57 @@ img {
 /*
  * InfoWindows
  */
+
+/*Overall - flex*/
 .infowindow {
- display: flex; /*etc.*/
- flex-wrap: wrap; /*etc.*/
+ 	display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -moz-flex;
+    display: -webkit-flex;
+    display: flex;
+    flex-wrap: wrap;
 }
 
+/*Keep image at natural size*/
 .infowindow-image {
 	width:100px;
 	height: 100px;
 }
 
+/*Keep details in remaining space*/
 .infowindow-details {
 	width: 150px;
 	height: 100px;
 	text-align: center;
 }
 
-.infowindow-details h2 {
+.infowindow-details-name {
 	margin: 0;
 }
 
-.infowindow-details h3 {
+.infowindow-details-address {
 	margin-top: 5px;
 	margin-bottom: 5px;
 }
 
-.infowindow-details a {
+/*Remove default link appearance*/
+.infowindow-details-phone {
 	color: black;
     text-decoration: none;
-}
-
-.infowindow-snippet {
-	margin-bottom: 0;
 }
 
 .infowindow-details-ratings {
 	padding-top: 5px;
 }
 
-.infowindow-details-ratings span {
+.infowindow-details-ratings-count {
 	vertical-align: top;
 }
+
+/*Format*/
+.infowindow-snippet {
+	margin-bottom: 0;
+}
+
+

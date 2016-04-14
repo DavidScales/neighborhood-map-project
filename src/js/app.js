@@ -15,6 +15,20 @@ var RADIUS = 5000;
 
 
 /*
+ * Yelp data
+ */
+
+// Check localStorage for data from previous user visit
+var placesStoredString = localStorage.getItem('placesStored');
+
+// If data is absent, request new Yelp data
+if (placesStoredString === null) {
+
+	// Begin Yelp request
+	getYelp();
+}
+
+/*
  * Geographic coordinates that will be used to define our map's initial center
  */
 
@@ -48,22 +62,6 @@ if (yelpLocationStored !== null) {
 // If no data was stored, use a default search term
 else {
 	var yelpLocation = 'Belmont, California';
-}
-
-
-/*
- * If Yelp data doesn't exist from a previous user visit, request new Yelp data.
- * If old Yelp data does exist, the old data will be loaded instead, once Google Maps has responded.
- */
-
-// Check localStorage for data from previous user visit
-var placesStoredString = localStorage.getItem('placesStored');
-
-// If data is absent, request new Yelp data
-if (placesStoredString === null) {
-
-	// Begin Yelp request
-	getYelp();
 }
 
 /*******************************************************************************************
@@ -373,12 +371,12 @@ var Place = function(placeData) {
 	this.infoWindowContent = '<div class="infowindow">'+
 							 	 '<img class="infowindow-image" alt="food image" src="'+self.image+'">'+
 								 '<div class="infowindow-details">'+
-									 '<h2>'+self.name+'</h2>'+
-									 '<h3>'+self.address+'</h3>'+
-		                        	 '<a href="'+self.autoPhoneNumber+'">'+self.phoneNumber+'</a>'+
+									 '<h2 class=infowindow-details-name>'+self.name+'</h2>'+
+									 '<h3 class=infowindow-details-address>'+self.address+'</h3>'+
+		                        	 '<a class="infowindow-details-phone" href="'+self.autoPhoneNumber+'">'+self.phoneNumber+'</a>'+
 		                        	 '<div class="infowindow-details-ratings">'+
 			                        	 '<img src="'+self.ratingImage+'" alt="yelp rating">'+
-			                        	 '<span>('+self.reviewCount+')</span>'+
+			                        	 '<span class="class=infowindow-details-ratings-count">('+self.reviewCount+')</span>'+
 		                        	 '</div>'+
 	                        	 '</div>'+
 	                        	 '<p class="infowindow-snippet">'+self.snippetText+'</p>'+
