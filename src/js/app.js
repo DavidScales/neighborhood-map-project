@@ -1,11 +1,35 @@
 /* app.js */
 
 /*
- * 1. Check for existing data in localStorage, if available skip Yelp request
- * 2. Request Yelp data from API, collecting data on restaurants in a neighborhood.
- *	  This data is stored locally, and used to populate a list and Google Map info windows.
- * 3.
- */
+This app starts by sending a Google Maps API (and Google Places Library) request, from
+index.html. In the meantime, local storage is checked for existing location and restaurant
+data from a previous user visit.
+
+If this data is not present, a Yelp API request is made using default values. The Yelp
+API returns info (as JSON objects) about restaurants in a neighborhood. As a callback,
+these objects are converted into "Place" objects, and the original data is stored in
+local storage for the next user visit. Place objects store relevant data about each place,
+that will be displayed in the view. They also establish each place's info window, map marker,
+and map marker listener. Places are stored in an observable array (model), which is bound to
+the a <ul> in the HTML. This automatically updates the View with a list.
+
+If data from a previous visit is found, that is used instead, and is similarly converted and
+stored. This is initiated by the Google Maps API callback. This callback also creates a Google
+Map, centered on either the previous or default neighborhood, and puts it into the view. Google
+Autocomplete functionality is then established on a user text <input>, and enables said input
+to update the current neighborhood. This will re-center the map on the new location, request
+new Yelp data (updating the model), and update local storage appropriately.
+
+Should either the Yelp or Google API's fail, the user is alerted.
+
+The ViewModel contains functionality for hiding and showing a sidebar, buttons, and infowindows,
+based on user mouse clicks and hovering. Additionally, the ability to filter restaurants (as list
+items and map markers) based on rating and name are established here and bound to user <inputs>.
+Small visual changes, such as bouncing a map marker or changing the CSS of a list item, are also
+established and similarly bound to the UI.
+
+The site has a mobile-first design, and utilizes jQuery, Knockout, OAuth, and Grunt.
+*/
 
 /*******************************************************************************************
  * Check localStorage and initialize location data
@@ -428,7 +452,7 @@ var ViewModel = function() {
 
 	/* This is the list of places to be displayed in the view (as a list, and as markers on the map).
 	 * It is filtered by user input. It's bound to the <ul> for places, and will update in real
-	 * time as the user changes the filter text in the <input>. */
+	 * time as the user changes the filter text and rating <input>s. */
 	self.filteredList = ko.computed(function(){
 
 		// Store the filter text and the places list, limiting re-computation
