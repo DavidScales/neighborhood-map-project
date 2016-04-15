@@ -147,7 +147,8 @@ function getYelp() {
 	 * which will not execute our callback if an error occurs */
 	yelpTimeout = window.setTimeout(function(){
 		alert("It looks like Yelp isn't responding :( Try refreshing the page."+
-		      " If that doesn't work, consider going outside :D ");
+		      " If that doesn't work, consider going outside :D "
+		);
 	}, 4000);
 
 	// Send AJAX query via jQuery library
@@ -197,15 +198,32 @@ function yelpCallback(data) {
 	places([]);
 	placesStorage = [];
 
+	// If Google Maps has loaded successfully
+	if (typeof google === 'object' && typeof google.maps === 'object') {
+
+		// For each place returned
+		for (var i = 0, total = data.businesses.length; i < total; i++) {
+
+			// Convert data to Place object and add to observable array
+			places.push( new Place(data.businesses[i]) );
+
+		}
+	}
+
+	// If Google Maps has not yet loaded, alert the user
+	else {
+		alert("It looks like Google Maps couldn't load fast enough for our program, "+
+			  "but Yelp data should be saved on your local storage. Try refreshing "+
+			  "the page, that should solve the problem."
+		);
+	}
+
 	// For each place returned
 	for (var i = 0, total = data.businesses.length; i < total; i++) {
 
-		// Convert data to Place object and add to observable array
-		places.push( new Place(data.businesses[i]) );
-
 		// Save raw data for localStorage
 		placesStorage.push(data.businesses[i]);
-    }
+	}
 
     // Store/update raw places data in localStorage
     localStorage.setItem('placesStored', JSON.stringify(placesStorage) );
@@ -214,7 +232,7 @@ function yelpCallback(data) {
 
  	// User Timing API - for testing perf
 	window.performance.mark('yelpCallback_end');
-	window.performance.measure('yelpCallback executing', 'yelpCallback_start', 'yelpCallback_end');
+	window.performance.measure('Processing Yelp data...', 'yelpCallback_start', 'yelpCallback_end');
 }
 
 /* If Yelp data persists from the last user visit, this function will load it into the places array.
@@ -335,7 +353,8 @@ function initMap() {
  * request is unsuccessful */
 function mapsError() {
 	alert("It looks like Google Maps isn't working :( Try refreshing the page."+
-		  " If that doesn't work, consider going outside :D");
+		  " If that doesn't work, consider going outside :D"
+	);
 	// document.location.href = 'http://www.mozilla.org' // Optionally: relocate to apology page
 }
 
