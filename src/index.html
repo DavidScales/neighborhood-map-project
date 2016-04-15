@@ -21,11 +21,6 @@
 
     <body>
 
-        <!-- TESTING -->
-        <script>
-            window.performance.mark('start_body');
-        </script>
-
         <!-- Open button. Opens sidebar, and hides itself while sidebar is open -->
         <button class="button openbutton" data-bind="event: {click: openSidebar}, css: {openbutton__hidden: sidebarVisible}">List</button>
 
@@ -78,31 +73,13 @@
         <!-- Google map. Closes sidebar when moused over  -->
         <div id="map" data-bind="event: {mouseover: closeSidebar, click: closeSidebar}"></div>
 
-        <!-- TESTING -->
-        <script>
-            window.performance.mark('start_libraries');
-            window.performance.measure('Load HTML', 'start_body', 'start_libraries');
-        </script>
-
         <!-- Load libraries -->
         <script src="js/lib/jquery-1.12.2.min.js?__inline=true"></script>
         <script src="js/lib/knockout-3.4.0.min.js?__inline=true"></script>
         <script src="js/lib/oauth-signature.min.js??__inline=true"></script>
 
-        <!-- TESTING -->
-        <script>
-            window.performance.mark('start_app');
-            window.performance.measure('Load libraries', 'start_libraries', 'start_app');
-        </script>
-
         <!-- Load and run main js file -->
         <script src="js/app.js?__inline=true"></script>
-
-        <!-- TESTING -->
-        <script>
-            window.performance.mark('maps_request');
-            window.performance.measure('Load app', 'start_app', 'maps_request');
-        </script>
 
         <!-- Load Google Maps API  -->
         <script src="https://maps.googleapis.com/maps/api/js?libraries=places&key=AIzaSyBUjsdD1ThEiL98_mDnT8sCPAu-ED0DeYg&callback=initMap" onerror="mapsError()" async>

@@ -95,10 +95,6 @@ function getYelp() {
 	/* Thanks to MarkN on Udacity forums for help explaining Yelp request and OAuth use
 	 * https://discussions.udacity.com/t/how-to-make-ajax-request-to-yelp-api/13699/4 */
 
- 	// User Timing API - for testing perf
-	window.performance.mark('getYelp_called');
-	window.performance.measure('getYelp delay', 'start_app', 'getYelp_called');
-
 	// Abstract some Yelp API / OAuth parameters
 	// These should ideally be hidden somehow...
 	var yelp_url = 'https://api.yelp.com/v2/search?';
@@ -137,10 +133,6 @@ function getYelp() {
 		dataType: 'jsonp', // Need jsonp for cross-domain requests
 		jsonp: false // Prevent jQuery from defining its own callback function, which invalidates OAuth stuff
 	};
-
- 	// User Timing API - for testing perf
-	window.performance.mark('yelp_data_requested');
-	window.performance.measure('getYelp executing', 'getYelp_called', 'yelp_data_requested');
 
 	// Set a timeout in case Yelp request fails
 	/* This is required because our Yelp request is cross origin and uses JSONP,
@@ -190,10 +182,6 @@ function yelpCallback(data) {
 	// Clear the Yelp error timeout, since we have recieved a response
 	window.clearTimeout(yelpTimeout);
 
- 	// User Timing API - for testing perf
-	window.performance.mark('yelpCallback_start');
-	window.performance.measure('Wait for Yelp data', 'yelp_data_requested', 'yelpCallback_start');
-
 	// Clear existing places data
 	places([]);
 	placesStorage = [];
@@ -229,10 +217,6 @@ function yelpCallback(data) {
     localStorage.setItem('placesStored', JSON.stringify(placesStorage) );
     // Store/update Yelp location data in localStorage
     localStorage.setItem('yelpLocation', yelpLocation);
-
- 	// User Timing API - for testing perf
-	window.performance.mark('yelpCallback_end');
-	window.performance.measure('Processing Yelp data...', 'yelpCallback_start', 'yelpCallback_end');
 }
 
 /* If Yelp data persists from the last user visit, this function will load it into the places array.
@@ -273,10 +257,6 @@ var service;
 
 // initMap called by Google Maps API callback
 function initMap() {
-
-	// User Timing API - for testing perf
-	window.performance.mark('initMap_called');
-	window.performance.measure('Wait for maps', 'maps_request', 'initMap_called');
 
 	// Create map in the #map div
 	map = new google.maps.Map(document.getElementById('map'), {
@@ -343,10 +323,6 @@ function initMap() {
 			map.setCenter(mapCenter);
 		}
 	}
-
-	// User Timing API - for testing perf
-	window.performance.mark('initMap_done');
-	window.performance.measure('Load map', 'initMap_called', 'initMap_done');
 }
 
 /* Alert the user if Google Maps failed to load. This function is called if the Maps
@@ -541,25 +517,3 @@ var ViewModel = function() {
 // Apply bindings to the ViewModel, linking UI/View with Model/data
 var viewModel = new ViewModel();
 ko.applyBindings(viewModel);
-
-/*******************************************************************************************
- * Testing
- *******************************************************************************************/
-
-// Testing with User Timing API - log perf measurements
-function logMeasurements(){
-
-	var measures = window.performance.getEntriesByType('measure');
-
-	var name, start, end, duration;
-
-	for (var i = 0; i < measures.length; i++){
-
-		name = measures[i].name;
-		duration = Math.floor(measures[i].duration);
-		start = Math.floor(measures[i].startTime);
-		end = start + duration;
-
-		console.log(name+': @'+start+'ms, taking '+duration+'ms, ending at '+end+'ms');
-	}
-}
