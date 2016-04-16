@@ -26,7 +26,7 @@
 
         <!-- New location search -->
         <div class="location" data-bind="css:{location__hidden: sidebarVisible}">
-            <input id="location-input" type="text" placeholder="Enter your address"></input>
+            <input id="location-input" type="text" placeholder="Enter your address">
         </div>
 
         <!-- Sidebar. Off screen by default. "Opens" by changing CSS class, activated by bound UI events -->
@@ -46,7 +46,7 @@
                     <!-- Rating filter - filters places by user slider input -->
                     <div class="sidebar-content-filter-rating">
                         <label for="rating-slider-input">Minimum rating:</label>
-                        <input id="rating-slider-input" type="range" min="0" max="5" step="0.5" data-bind="value: ratingNumber"></input>
+                        <input id="rating-slider-input" type="range" min="0" max="5" step="0.5" data-bind="value: ratingNumber">
                         <h4 id="rating-slider-label" data-bind="text: ratingNumber"></h4>
                     </div>
 
@@ -84,6 +84,9 @@
         <!-- Load Google Maps API  -->
         <script src="https://maps.googleapis.com/maps/api/js?libraries=places&key=AIzaSyBUjsdD1ThEiL98_mDnT8sCPAu-ED0DeYg&callback=initMap" onerror="mapsError()" async>
         </script>
+
+        <!-- Load the page styles -->
+        <link href="css/fonts.css?__inline=true" rel="stylesheet">
 
     </body>
 </html>
