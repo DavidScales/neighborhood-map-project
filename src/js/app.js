@@ -388,7 +388,7 @@ var Place = function(placeData) {
 		                        	 '<a class="infowindow-details-phone" href="'+self.autoPhoneNumber+'">'+self.phoneNumber+'</a>'+
 		                        	 '<div class="infowindow-details-ratings">'+
 			                        	 '<img src="'+self.ratingImage+'" alt="yelp rating">'+
-			                        	 '<span class="class=infowindow-details-ratings-count">('+self.reviewCount+')</span>'+
+			                        	 '<span class="infowindow-details-ratings-count">('+self.reviewCount+')</span>'+
 		                        	 '</div>'+
 	                        	 '</div>'+
 	                        	 '<p class="infowindow-snippet">'+self.snippetText+'</p>'+
