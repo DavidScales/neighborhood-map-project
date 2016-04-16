@@ -381,9 +381,9 @@ var Place = function(placeData) {
 
 	// Build HTML content for an info window
 	this.infoWindowContent = '<div class="infowindow">'+
+								 '<h2 class=infowindow-name>'+self.name+'</h2>'+
 							 	 '<img class="infowindow-image" alt="food image" src="'+self.image+'">'+
 								 '<div class="infowindow-details">'+
-									 '<h2 class=infowindow-details-name>'+self.name+'</h2>'+
 									 '<h3 class=infowindow-details-address>'+self.address+'</h3>'+
 		                        	 '<a class="infowindow-details-phone" href="'+self.autoPhoneNumber+'">'+self.phoneNumber+'</a>'+
 		                        	 '<div class="infowindow-details-ratings">'+

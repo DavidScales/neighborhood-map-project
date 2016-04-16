@@ -365,6 +365,14 @@ img {
     flex-wrap: wrap;
 }
 
+.infowindow-name {
+	margin: 0;
+	width: 100%;
+    text-align: center;
+    margin-bottom: 5px;
+    border: 1px solid #9E9E9E;
+}
+
 /*Keep image at natural size*/
 .infowindow-image {
 	width:100px;
@@ -373,12 +381,9 @@ img {
 
 /*Keep details in remaining space*/
 .infowindow-details {
+	margin-top: 7px;
 	width: 150px;
 	text-align: center;
-}
-
-.infowindow-details-name {
-	margin: 0;
 }
 
 .infowindow-details-address {
