@@ -339,7 +339,9 @@ img {
 /*Keep details in remaining space*/
 .infowindow-details {
 	margin-top: 7px;
-	width: 150px;
+	margin-left: 5px;
+	width: auto;
+    max-width: 145px;;
 	text-align: center;
 }
 
