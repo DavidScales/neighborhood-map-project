@@ -1,39 +1,43 @@
 /* app.js */
 
 /*
-This app starts by sending a Google Maps API (and Google Places Library) request, from
-index.html. In the meantime, local storage is checked for existing location and restaurant
-data from a previous user visit.
+This app starts by sending a Google Maps API (and Google Places Library) request,
+from index.html. In the meantime, local storage is checked for existing location
+and restaurant data from a previous user visit.
 
-If this data is not present, a Yelp API request is made using default values. The Yelp
-API returns info (as JSON objects) about restaurants in a neighborhood. As a callback,
-these objects are converted into "Place" objects, and the original data is stored in
-local storage for the next user visit. Place objects store relevant data about each place,
-that will be displayed in the view. They also establish each place's info window, map marker,
-and map marker listener. Places are stored in an observable array (model), which is bound to
-the a <ul> in the HTML. This automatically updates the View with a list.
+If this data is not present, a Yelp API request is made using default values.
+The Yelp API returns info (as JSON objects) about restaurants in a neighborhood.
+As a callback, these objects are converted into "Place" objects, and the original
+data is stored in local storage for the next user visit. Place objects store
+relevant data about each place, that will be displayed in the view. They also
+establish each place's info window, map marker, and map marker listener. Places
+are stored in an observable array (model), which is bound to the a <ul> in the
+HTML. This automatically updates the View with a list.
 
-If data from a previous visit is found, that is used instead, and is similarly converted and
-stored. This is initiated by the Google Maps API callback. This callback also creates a Google
-Map, centered on either the previous or default neighborhood, and puts it into the view. Google
-Autocomplete functionality is then established on a user text <input>, and enables said input
-to update the current neighborhood. This will re-center the map on the new location, request
+If data from a previous visit is found, that is used instead, and is similarly
+converted and stored. This is initiated by the Google Maps API callback. This
+callback also creates a Google Map, centered on either the previous or default
+neighborhood, and puts it into the view. Google Autocomplete functionality is
+then established on a user text <input>, and enables said input to update the
+current neighborhood. This will re-center the map on the new location, request
 new Yelp data (updating the model), and update local storage appropriately.
 
 Should either the Yelp or Google API's fail, the user is alerted.
 
-The ViewModel contains functionality for hiding and showing a sidebar, buttons, and infowindows,
-based on user mouse clicks and hovering. Additionally, the ability to filter restaurants (as list
-items and map markers) based on rating and name are established here and bound to user <inputs>.
-Small visual changes, such as bouncing a map marker or changing the CSS of a list item, are also
+The ViewModel contains functionality for hiding and showing a sidebar, buttons,
+and infowindows, based on user mouse clicks and hovering. Additionally, the
+ability to filter restaurants (as list items and map markers) based on rating
+and name are established here and bound to user <inputs>. Small visual changes,
+such as bouncing a map marker or changing the CSS of a list item, are also
 established and similarly bound to the UI.
 
-The site has a mobile-first design, and utilizes jQuery, Knockout, OAuth, and Grunt.
+The site has a mobile-first design, and utilizes jQuery, Knockout, OAuth, and
+Grunt.
 */
 
-/*******************************************************************************************
+/******************************************************************************
  * Check localStorage and initialize location data
- *******************************************************************************************/
+ ******************************************************************************/
 
 // The map's starting zoom level
 var ZOOM = 13;
@@ -41,7 +45,8 @@ var ZOOM = 13;
 var RADIUS = 5000;
 
 /*
- * Check for existing places data in local storage, use if present, otherwise request new data.
+ * Check for existing places data in local storage, use if present, otherwise
+ * request new data.
  */
 
 // Retrieve local storage data
@@ -52,7 +57,9 @@ var yelpLocationStored = localStorage.getItem('yelpLocation');
 var yelpLocation;
 
 // If data is present
-if (placesStoredString !== null && mapCenterStored !== null && yelpLocationStored !== null) {
+if (placesStoredString !== null &&
+	mapCenterStored !== null &&
+	yelpLocationStored !== null) {
 
 	// Load existing map center
 	var mapCenter = JSON.parse(mapCenterStored);
@@ -77,13 +84,14 @@ else {
 	getYelp();
 }
 
-/*******************************************************************************************
+/*******************************************************************************
  * Yelp requests
- *******************************************************************************************/
+ ******************************************************************************/
 /*
- * Sends a Yelp request for information on restaurants in a neighborhood. Updates local
- * storage with this information. Converts each restaurant object into a Place object,
- * and stores them in a an observable array, which is tied to the View.
+ * Sends a Yelp request for information on restaurants in a neighborhood.
+ * Updates local storage with this information. Converts each restaurant object
+ * into a Place object, and stores them in a an observable array, which is tied
+ * to the View.
  */
 
 // Holder for storing Yelp data in localStorage
@@ -92,7 +100,7 @@ var placesStorage;
 /* This function makes a request to the Yelp API for local restaurant data */
 function getYelp() {
 
-	/* Thanks to MarkN on Udacity forums for help explaining Yelp request and OAuth use
+	/* Thanks to MarkN on Udacity forums for explaining Yelp request & OAuth use
 	 * https://discussions.udacity.com/t/how-to-make-ajax-request-to-yelp-api/13699/4 */
 
 	// Abstract some Yelp API / OAuth parameters
@@ -105,33 +113,66 @@ function getYelp() {
 
 	// Set required Yelp API parameters object
 	var parameters = {
-		// OAuth required values
+
+		/*  OAuth required values */
+
 		oauth_consumer_key: YELP_KEY,
 		oauth_token: YELP_TOKEN,
-		oauth_nonce: Math.floor(Math.random() * 1e12).toString(), // Generates a random number and returns it as a string for OAuthentication
-		oauth_timestamp: Math.floor(Date.now()/1000), // Generates a timestamp
 		oauth_signature_method: 'HMAC-SHA1',
 		oauth_version : '1.0',
-		callback: 'yelpCallback', // This is crucial to include for jsonp implementation in AJAX or else the oauth-signature will be wrong.
-		// Place-specific parameters for request
-		location: yelpLocation, // Location of the place
-		term: 'food', // Search for food (broader than "restaurant")
-		limit: 10, // Limit number of search results to reduce clutter
-		radius_filter: RADIUS // Narrow the physical area of search
+
+		// Generate a random number and returns it as a string for OAuthentication
+		oauth_nonce: Math.floor(Math.random() * 1e12).toString(),
+
+		// Generates a timestamp
+		oauth_timestamp: Math.floor(Date.now()/1000),
+
+		/* This is crucial to include for jsonp implementation in AJAX or else
+		the oauth-signature will be wrong. */
+		callback: 'yelpCallback',
+
+		/* Place-specific parameters for request */
+
+		// Location of the place
+		location: yelpLocation,
+
+		// Search for food (broader than "restaurant")
+		term: 'food',
+
+		// Limit number of search results to reduce clutter
+		limit: 10,
+
+		// Narrow the physical area of search
+		radius_filter: RADIUS
 	};
 
 	// Generate a required OAuth signature using external library
-	var encodedSignature = oauthSignature.generate('GET',yelp_url, parameters, YELP_KEY_SECRET, YELP_TOKEN_SECRET);
+	var encodedSignature = oauthSignature.generate(
+		'GET',yelp_url, parameters, YELP_KEY_SECRET, YELP_TOKEN_SECRET
+		);
+
 	// Add the signature to the Yelp parameters object
 	parameters.oauth_signature = encodedSignature;
 
 	// Set settings object for AJAX request
 	var settings = {
-		url: yelp_url, // base url for Yelp API
-		data: parameters, // Send the Yelp API parameters
-		cache: true,  // This is crucial to include as well to prevent jQuery from adding on a cache-buster parameter "_=23489489749837", invalidating our oauth-signature
-		dataType: 'jsonp', // Need jsonp for cross-domain requests
-		jsonp: false // Prevent jQuery from defining its own callback function, which invalidates OAuth stuff
+
+		// base url for Yelp API
+		url: yelp_url,
+
+		// Send the Yelp API parameters
+		data: parameters,
+
+		/* This is crucial to include as well to prevent jQuery from adding on a
+		cache-buster parameter "_=23489489749837", invalidating our oauth-signature */
+		cache: true,
+
+		// Need jsonp for cross-domain requests
+		dataType: 'jsonp',
+
+		/* Prevent jQuery from defining its own callback function, which
+		invalidates OAuth stuff */
+		jsonp: false
 	};
 
 	// Set a timeout in case Yelp request fails
@@ -171,12 +212,14 @@ function getYelp() {
 	document.body.appendChild(scriptElement);
 
 	// Error occuring...
-	// {"error": {"text": "One or more parameters are missing in request", "id": "MISSING_PARAMETER", "field": "oauth_consumer_key"}}
+	// {"error": {"text": "One or more parameters are missing in request",
+	// "id": "MISSING_PARAMETER", "field": "oauth_consumer_key"}}
 	*/
 }
 
-/* This callback recieves the Yelp data for the local restaurants, converts them into Place objects,
- * and stores them in an observable array. Also stores data as normal objects, and updates localStorage */
+/* This callback recieves the Yelp data for the local restaurants, converts them
+ * into Place objects, and stores them in an observable array. Also stores data
+ * as normal objects, and updates localStorage */
 function yelpCallback(data) {
 
 	// Clear the Yelp error timeout, since we have recieved a response
@@ -225,8 +268,8 @@ function yelpCallback(data) {
     localStorage.setItem('yelpLocation', yelpLocation);
 }
 
-/* If Yelp data persists from the last user visit, this function will load it into the places array.
- * This is used in lieu of an unnecessary Yelp request */
+/* If Yelp data persists from the last user visit, this function will load it
+ * into the places array. This is used in lieu of an unnecessary Yelp request */
 function loadStoredData() {
 
 	// Set up new map bounds to contain markers
@@ -249,19 +292,21 @@ function loadStoredData() {
 	map.fitBounds(markerBounds);
 }
 
-/*******************************************************************************************
+/*******************************************************************************
  * Google Maps initialization, Google Places request
- *******************************************************************************************/
-/* A Google Map is created, centered on our initial neighborhood, and put into the view.
- * This function is called as a callback to the Google Maps API request in index.html.
+ ******************************************************************************/
+/* A Google Map is created, centered on our initial neighborhood, and put into
+ * the view. This function is called as a callback to the Google Maps API request
+ * in index.html.
  *
- * Additionally, if persistent Yelp data from a previous user visit exists, this function
- * will kick off the loading of that data (and the Yelp request will be skipped).
+ * Additionally, if persistent Yelp data from a previous user visit exists, this
+ * function will kick off the loading of that data (and the Yelp request will be
+ * skipped).
  *
- * Finally, this function will establish Google Autocomplete functionality on a user
- * text <input>, and enable said input to update the current location. This will
- * re-center the map on the new location, request new Yelp data (updating the places model),
- * and update localStorage appropriately. */
+ * Finally, this function will establish Google Autocomplete functionality on a
+ * user text <input>, and enable said input to update the current location. This
+ * will re-center the map on the new location, request new Yelp data (updating
+ * the places model), and update localStorage appropriately. */
 
 // Initialize map
 var map;
@@ -280,7 +325,8 @@ function initMap() {
 
 	/* Once maps has successfully loaded */
 
-	/* If places data exists from last user visit, simply load that data into places array */
+	/* If places data exists from last user visit, simply load that data into
+	 * places array */
 	if (placesStoredString !== null) {
 
 		// Load from last visit into places array
@@ -338,21 +384,22 @@ function initMap() {
 	}
 }
 
-/* Alert the user if Google Maps failed to load. This function is called if the Maps
- * request is unsuccessful */
+/* Alert the user if Google Maps failed to load. This function is called if the
+ * Maps request is unsuccessful */
 function mapsError() {
 	alert("It looks like Google Maps isn't working :( Try refreshing the page."+
 		  " If that doesn't work, consider going outside :D"
 	);
-	// document.location.href = 'http://www.mozilla.org' // Optionally: relocate to apology page
+	// document.location.href = 'http://www.mozilla.org'
+	// Optionally: relocate to apology page
 }
 
-/*******************************************************************************************
+/*******************************************************************************
  * Model
- *******************************************************************************************/
+ ******************************************************************************/
 /* Results from the Yelp request are converted into Place objects. Place objects
- * store relevant data about each place, that will be displayed in the view. They also
- * establish each place's info window, map marker, and map marker listener.
+ * store relevant data about each place, that will be displayed in the view. They
+ * also establish each place's info window, map marker, and map marker listener.
  */
 var Place = function(placeData) {
 
@@ -365,13 +412,21 @@ var Place = function(placeData) {
 	this.name = placeData.name ? placeData.name : "Name not provided";
 
 	// Address
-	this.address = placeData.location.display_address[0] ? placeData.location.display_address[0]: "Address not provided";
+	this.address = placeData.location.display_address[0] ?
+	placeData.location.display_address[0] : "Address not provided";
 
 	// Formatted phone number for autodialing
-	this.autoPhoneNumber = placeData.display_phone ? "tel:" + placeData.display_phone : "Phone number not provided";
+	this.autoPhoneNumber = placeData.display_phone ?
+	"tel:" + placeData.display_phone : "Phone number not provided";
 
 	// Formatted phone number for displaying
-	this.phoneNumber = placeData.phone ? "("+placeData.phone.slice(0,3)+")"+placeData.phone.slice(3,6)+"-"+placeData.phone.slice(6) : "Phone number not provided";
+	this.phoneNumber = placeData.phone ?
+	"("+
+	placeData.phone.slice(0,3)+
+	")"+
+	placeData.phone.slice(3,6)+
+	"-"+
+	placeData.phone.slice(6) : "Phone number not provided";
 
 	// Yelp rating, numeric
 	this.rating = placeData.rating ? placeData.rating : 0;
@@ -383,10 +438,12 @@ var Place = function(placeData) {
 	this.reviewCount = placeData.review_count ? placeData.review_count : 0;
 
 	// A Yelp image associated with the place
-	this.image = placeData.image_url ? placeData.image_url : "http://placekitten.com/100/100";
+	this.image = placeData.image_url ?
+	placeData.image_url : "http://placekitten.com/100/100";
 
 	// A Yelp snippet associated with the place
-	this.snippetText = placeData.snippet_text ? placeData.snippet_text : "No snippet provided";
+	this.snippetText = placeData.snippet_text ?
+	placeData.snippet_text : "No snippet provided";
 
 	// Link to the place's Yelp web page
 	this.yelpUrl = placeData.url;
@@ -406,7 +463,7 @@ var Place = function(placeData) {
 		map: map,
 		icon: 'images/map-marker.png', // Custom icon
 		title: self.name, // Set title to place name
-		animation: google.maps.Animation.DROP // Add drop animation for marker initialization
+		animation: google.maps.Animation.DROP // Drop animation
 	});
 
 	// Extend map bounds to fit new marker
@@ -422,17 +479,33 @@ var Place = function(placeData) {
 
 	// Build HTML content for an info window
 	this.infoWindowContent = '<div class="infowindow">'+
-								 '<h2 class=infowindow-name>'+self.name+'</h2>'+
-							 	 '<img class="infowindow-image" alt="food image" src="'+self.image+'">'+
-								 '<div class="infowindow-details">'+
-									 '<h3 class=infowindow-details-address>'+self.address+'</h3>'+
-		                        	 '<a class="infowindow-details-phone" href="'+self.autoPhoneNumber+'">'+self.phoneNumber+'</a>'+
-		                        	 '<div class="infowindow-details-ratings">'+
-			                        	 '<img src="'+self.ratingImage+'" alt="yelp rating">'+
-			                        	 '<span class="infowindow-details-ratings-count">('+self.reviewCount+')</span>'+
-		                        	 '</div>'+
-	                        	 '</div>'+
-	                        	 '<p class="infowindow-snippet">'+self.snippetText+'</p>'+
+						     '<h2 class=infowindow-name>'+
+						     self.name+
+						     '</h2>'+
+							 '<img class="infowindow-image" alt="food image" src="'+
+							 self.image+
+							 '">'+
+							 '<div class="infowindow-details">'+
+							 '<h3 class=infowindow-details-address>'+
+							 self.address+
+							 '</h3>'+
+		                     '<a class="infowindow-details-phone" href="'+
+		                     self.autoPhoneNumber+
+		                     '">'+
+		                     self.phoneNumber+
+		                     '</a>'+
+		                     '<div class="infowindow-details-ratings">'+
+			                 '<img src="'+
+			                 self.ratingImage+
+			                 '" alt="yelp rating">'+
+			                 '<span class="infowindow-details-ratings-count">('+
+			                 self.reviewCount+
+			                 ')</span>'+
+		                     '</div>'+
+	                         '</div>'+
+	                         '<p class="infowindow-snippet">'+
+	                         self.snippetText+
+	                         '</p>'+
                         	 '</div>';
 
 	// Establish an info window (not yet displayed)
@@ -442,13 +515,13 @@ var Place = function(placeData) {
 	});
 };
 
-/* Places are stored in an observable array, which is bound to the #places-list <ul>
- * in the HTML. This automatically updates the View with a list */
+/* Places are stored in an observable array, which is bound to the #places-list
+ * <ul> in the HTML. This automatically updates the View with a list */
 var places = ko.observableArray();
 
-/*******************************************************************************************
+/*******************************************************************************
  * ViewModel
- *******************************************************************************************/
+ ******************************************************************************/
 
 // ViewModel allows interaction between UI/View and Model/data
 var ViewModel = function() {
@@ -456,12 +529,14 @@ var ViewModel = function() {
 	// Store local scope
 	var self = this;
 
-	/* Open/closed status of the sidebar. This boolean is used in the HTML to determine what CSS
-	 * class to apply to the sidebar (an "open" class or "closed/default" class). Functions
-	 * are called to change the status of this boolean when a user hovers/clicks areas in the UI. */
+	/* Open/closed status of the sidebar. This boolean is used in the HTML to
+	 * determine what CSS class to apply to the sidebar (an "open" class or
+ 	 * "closed/default" class). Functions are called to change the status of this
+     * boolean when a user hovers/clicks areas in the UI. */
 	self.sidebarVisible = ko.observable(false);
 
-	// Open the sidebar, changing its CSS class. Bound to UI. Also close current info window.
+	/* Open the sidebar, changing its CSS class. Bound to UI. Also close current
+	 * info window. */
 	self.openSidebar = function() {
 
 		// Open sidebar
@@ -486,9 +561,10 @@ var ViewModel = function() {
 	// A bound text <input> allows filtering of places by name.
 	self.filterText = ko.observable('');
 
-	/* This is the list of places to be displayed in the view (as a list, and as markers on the map).
-	 * It is filtered by user input. It's bound to the <ul> for places, and will update in real
-	 * time as the user changes the filter text and rating <input>s. */
+	/* This is the list of places to be displayed in the view (as a list, and as
+	 * markers on the map). It is filtered by user input. It's bound to the <ul>
+	 * for p laces, and will update in real time as the user changes the filter
+	 * text and rating <input>s. */
 	self.filteredList = ko.computed(function(){
 
 		// Store the filter text and the places list, limiting re-computation
@@ -500,8 +576,10 @@ var ViewModel = function() {
 		// For each place in the places list
 		for (var i = 0; i < placesLength; i++) {
 
-			// If the place name (lower case) contains the filter text, and the rating is above the minimum
-			if ( placesCopy[i].name.toLowerCase().includes(filterText) &&  placesCopy[i].rating >= self.ratingNumber() ) {
+			/* If the place name (lower case) contains the filter text, and the
+			 * rating is above the minimum */
+			if ( placesCopy[i].name.toLowerCase().includes(filterText) &&
+				 placesCopy[i].rating >= self.ratingNumber() ) {
 
 				// Add the corresponding map marker
 				placesCopy[i].marker.setMap(map);
@@ -519,11 +597,11 @@ var ViewModel = function() {
 		return filteredList;
 	});
 
-	/* Keep track of which place is currently under investigation by the user, or "active".
-	 * A click listener exists on each 'place' UI element (map marker and <li> item), that calls
-	 * a function which changes the clicked element's corresponding place to the "active" place.
-	 * KO logic in the html changes the CSS class of the active UI element.
-	 */
+	/* Keep track of which place is currently under investigation by the user,
+	 * or "active". A click listener exists on each 'place' UI element (map
+	 * marker and <li> item), that calls a function which changes the clicked
+	 * element's corresponding place to the "active" place. KO logic in the html
+	 * changes the CSS class of the active UI element. */
 	self.activePlace = ko.observable('uninitialized');
 
 	/* Update the place that is currently active.
@@ -553,8 +631,10 @@ var ViewModel = function() {
 		self.activePlace().marker.setIcon('images/map-marker-active.png');
 
 		// Create a bounce animation for the active place
-		self.activePlace().marker.setAnimation(google.maps.Animation.BOUNCE); // Begin bouncing
-		setTimeout( function(){clickedPlace.marker.setAnimation(null);}, 1400 ); // Stop after 2 bounces (~700ms each)
+		// Begin bouncing
+		self.activePlace().marker.setAnimation(google.maps.Animation.BOUNCE);
+		// Stop after 2 bounces (~700ms each)
+		setTimeout( function(){clickedPlace.marker.setAnimation(null);}, 1400 );
 
 		// Open info window
 		self.activePlace().infoWindow.open(map, self.activePlace().marker);
