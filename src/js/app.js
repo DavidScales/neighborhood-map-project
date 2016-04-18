@@ -359,19 +359,43 @@ var Place = function(placeData) {
 	// Store local scope
 	var self = this;
 
-	// These values are extracted from the initial Yelp request
-	this.name = placeData.name; // Name
-	this.address = placeData.location.display_address[0]; // Address
-	this.autoPhoneNumber = "tel:" + placeData.display_phone; // Formatted phone number for autodialing
-	this.phoneNumber = "("+placeData.phone.slice(0,3)+")"+placeData.phone.slice(3,6)+"-"+placeData.phone.slice(6); // Formatted phone number for displaying
-	this.rating = placeData.rating; // Yelp rating, numeric
-	this.ratingImage = placeData.rating_img_url; // Yelp rating, graphic
-	this.reviewCount = placeData.review_count; // Number of Yelp reviews
-	this.image = placeData.image_url; // A Yelp image associated with the place
-	this.snippetText = placeData.snippet_text; // A Yelp snippet associated with the place
-	this.yelpUrl = placeData.url; // Link to the place's Yelp web page
-	this.lat = placeData.location.coordinate.latitude; // Latitude for map marker placement
-	this.lng = placeData.location.coordinate.longitude;// Longitude for map marker placement
+	/* These values are extracted from the Yelp request */
+
+	// Name
+	this.name = placeData.name ? placeData.name : "Name not provided";
+
+	// Address
+	this.address = placeData.location.display_address[0] ? placeData.location.display_address[0]: "Address not provided";
+
+	// Formatted phone number for autodialing
+	this.autoPhoneNumber = placeData.display_phone ? "tel:" + placeData.display_phone : "Phone number not provided";
+
+	// Formatted phone number for displaying
+	this.phoneNumber = placeData.phone ? "("+placeData.phone.slice(0,3)+")"+placeData.phone.slice(3,6)+"-"+placeData.phone.slice(6) : "Phone number not provided";
+
+	// Yelp rating, numeric
+	this.rating = placeData.rating ? placeData.rating : 0;
+
+	// Yelp rating, graphic
+	this.ratingImage = placeData.rating_img_url;
+
+	// Number of Yelp reviews
+	this.reviewCount = placeData.review_count ? placeData.review_count : 0;
+
+	// A Yelp image associated with the place
+	this.image = placeData.image_url ? placeData.image_url : "http://placekitten.com/100/100";
+
+	// A Yelp snippet associated with the place
+	this.snippetText = placeData.snippet_text ? placeData.snippet_text : "No snippet provided";
+
+	// Link to the place's Yelp web page
+	this.yelpUrl = placeData.url;
+
+	// Latitude for map marker placement
+	this.lat = placeData.location.coordinate.latitude;
+
+	// Longitude for map marker placement
+	this.lng = placeData.location.coordinate.longitude;
 
 	// Create and append Google map markers for each place based on location
 	this.marker = new google.maps.Marker({
