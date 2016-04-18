@@ -140,7 +140,7 @@ function getYelp() {
 		term: 'food',
 
 		// Limit number of search results to reduce clutter
-		limit: 10,
+		limit: 20,
 
 		// Narrow the physical area of search
 		radius_filter: RADIUS
