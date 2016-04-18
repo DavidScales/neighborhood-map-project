@@ -189,6 +189,9 @@ function yelpCallback(data) {
 	// If Google Maps has loaded successfully
 	if (typeof google === 'object' && typeof google.maps === 'object') {
 
+		// Set up new map bounds to contain markers
+		markerBounds = new google.maps.LatLngBounds();
+
 		// For each place returned
 		for (var i = 0, total = data.businesses.length; i < total; i++) {
 
@@ -196,6 +199,9 @@ function yelpCallback(data) {
 			places.push( new Place(data.businesses[i]) );
 
 		}
+
+		// Fit map to markers
+		map.fitBounds(markerBounds);
 	}
 
 	// If Google Maps has not yet loaded, alert the user
@@ -223,6 +229,9 @@ function yelpCallback(data) {
  * This is used in lieu of an unnecessary Yelp request */
 function loadStoredData() {
 
+	// Set up new map bounds to contain markers
+	markerBounds = new google.maps.LatLngBounds();
+
 	console.log('Loading stored data into places...');
 
 	// Convert places data string into JSON object
@@ -235,6 +244,9 @@ function loadStoredData() {
 		places.push( new Place(storedPlaces[i]) );
 
 	}
+
+	// Fit map to markers
+	map.fitBounds(markerBounds);
 }
 
 /*******************************************************************************************
@@ -254,6 +266,7 @@ function loadStoredData() {
 // Initialize map
 var map;
 var service;
+var markerBounds;
 
 // initMap called by Google Maps API callback
 function initMap() {
@@ -371,6 +384,10 @@ var Place = function(placeData) {
 		title: self.name, // Set title to place name
 		animation: google.maps.Animation.DROP // Add drop animation for marker initialization
 	});
+
+	// Extend map bounds to fit new marker
+	var location = new google.maps.LatLng(self.lat, self.lng);
+	markerBounds.extend(location);
 
 	// Listen to marker clicks
 	this.marker.addListener('click', function() {
