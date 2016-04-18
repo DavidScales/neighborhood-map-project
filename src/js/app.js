@@ -502,6 +502,12 @@ var ViewModel = function() {
 		// Set new active place
 		self.activePlace(clickedPlace);
 
+		// Re-center the map
+		map.setCenter({
+			lat: self.activePlace().lat,
+			lng: self.activePlace().lng
+		});
+
 		// Set new marker icon, which is distinct from the rest
 		self.activePlace().marker.setIcon('images/map-marker-active.png');
 
